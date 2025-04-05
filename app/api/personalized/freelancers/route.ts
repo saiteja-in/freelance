@@ -1,4 +1,4 @@
-// app/api/upload-resume/route.ts
+import { commitmentFilterItems } from "@/app/_components/JobFilter";
 import { currentUser } from "@/lib/auth";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
@@ -83,12 +83,43 @@ export async function POST(req: NextRequest) {
     console.log("cleanResponse", cleanResponse);
 
     const parsedData = JSON.parse(cleanResponse);
+    console.log(parsedData)
 
-    // Return success response
-    return NextResponse.json({
-      success: true,
-      filters: parsedData,
-    });
+    // return NextResponse.json(parsedData, { status: 200 });
+
+    // Build query parameters for the URL
+    const params = new URLSearchParams();
+
+    if (parsedData.skills && Array.isArray(parsedData.skills)) {
+      parsedData.skills.forEach((skill: string) => {
+        params.append("skills", skill);
+      });
+    }
+
+    if (parsedData.budget) {
+      params.append("pay", `${parsedData.budget.min}-${parsedData.budget.max}`);
+    }
+
+    if (parsedData.experience) {
+      params.append(
+        "exp",
+        `${parsedData.experience.min}-${parsedData.experience.max} YOE`
+      );
+    }
+
+    // Check for commitment keywords in the client input
+    // const commitment = commitmentFilterItems.find((item) =>
+    //   searchPrompt.toUpperCase().includes(item)
+    // );
+    // if (commitment) {
+    //   params.append("commitment", commitment);
+    // }
+
+    const url = `http://localhost:3000/find-jobs?${params.toString()}`;
+
+    console.log("printinnnnnnnnnng urll",url)
+
+    return NextResponse.json({ url }, { status: 200 });
   } catch (error) {
     console.error("Failed to get personalised jobs:", error);
     return NextResponse.json(
