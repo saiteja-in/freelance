@@ -497,3 +497,92 @@ interface ProductData {
       throw new Error('Failed to fetch jobs');
     }
   };
+
+
+  export const getJobDetails = async (jobId: string) => {
+    try {
+      if (!jobId) {
+        return {
+          success: false,
+          error: 'Bad request',
+        };
+      }
+  
+      const job = await db.job.findUnique({
+        where: {
+          id: jobId,
+        },
+      });
+  
+      if (!job) {
+        return {
+          success: false,
+          error: 'Job not found',
+        };
+      }
+  
+      return {
+        success: true,
+        job,
+      };
+    } catch (err) {
+      console.error('error fetching job details : ', err);
+      return {
+        success: false,
+        error: 'Internal server error',
+      };
+    }
+  };
+
+
+  export const applyJob = async (jobId: string) => {
+    try {
+      const session = await auth()
+      if (!session) {
+        return {
+          success: false,
+          error: 'Unauthorised',
+        };
+      }
+  
+      // const customSession = session as CustomSession;
+      const id = session.user.id
+      if (!jobId) {
+        return {
+          success: false,
+          error: 'Bad request',
+        };
+      }
+  
+      // const isRecordAlreadyExists = await db.applied.findUnique({
+      //   where: {
+      //     jobSeekerId: id,
+      //   },
+      // });
+  
+      // if (isRecordAlreadyExists) {
+      //   return {
+      //     success: false,
+      //     error: 'Already applied',
+      //   };
+      // }
+  
+      await db.applied.create({
+        data: {
+          jobSeekerId: id,
+          jobId: jobId,
+        },
+      });
+  
+      return {
+        success: true,
+        message: 'applied',
+      };
+    } catch (err) {
+      console.error('error adding applied data : ', err);
+      return {
+        success: false,
+        error: 'Internal server error',
+      };
+    }
+  };

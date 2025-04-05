@@ -35,7 +35,7 @@ export default function JobCard({ job }: Props) {
   };
 
   const navigateToJobDetails = () => {
-    router.push(`/jobs/${job.id}`);
+    router.push(`/find-jobs/${job.id}`);
   };
 
   return (
