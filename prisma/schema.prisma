@@ -42,6 +42,12 @@ enum ApplicationStatus {
   HIRED
 }
 
+enum ApplicationAssignmentStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
 model User {
   id                String            @id @default(cuid())
   name              String?
@@ -70,7 +76,7 @@ model User {
   experienceRange   ExperienceRange?
   
   // Relations
-  projects          Project[]
+  projects          Project[] 
   previousCompanies PreviousCompany[]
   
   // Jobs the user has posted (as employer)
@@ -81,13 +87,17 @@ model User {
   
   // Jobs the user has bookmarked
   bookmarks         Bookmark[]
-  
+
+  // Relation to Applied model
+  appliedJobs       Applied[]         @relation("JobSeekerApplied")
+
   // Other relations from the product showcase feature
   upvotes           Upvote[]
   products          Product[]
   comments          Comment[]
   accounts          Account[]
 }
+
 
 model Project {
   id           String   @id @unique @default(cuid())
@@ -132,6 +142,7 @@ model Job {
   companyName        String
   companyLogo        String?
   companyDescription String?
+  ExpectedTime String?
   companyWebsite     String?
   jobType            JobType
   minExperience      Int
@@ -154,10 +165,33 @@ model Job {
   poster             User             @relation("JobPoster", fields: [posterId], references: [id], onDelete: Cascade)
   applications       JobApplication[] @relation("JobApplications")
   bookmarks          Bookmark[]
+    Applied            Applied[]
   
   @@index([posterId])
 }
+model Applied {
+  id            String                    @id @default(uuid())
+  jobSeekerId   String
+  jobId         String
+  employerId    String
+  ProposedPrice Int?
+  ProposedDate  DateTime?
+  Message       String?
+  status        ApplicationAssignmentStatus @default(PENDING)
 
+  job           Job      @relation(fields: [jobId], references: [id])
+  employer      User     @relation("JobSeekerApplied", fields: [employerId], references: [id])
+
+  @@unique([jobSeekerId, jobId])
+}
+
+
+// model Contracts{
+//   id String @id @default(uuid())
+//   freelancerId @id
+//   clientId @id
+//   bidId @id
+// }
 model JobApplication {
   id          String            @id @default(cuid())
   jobId       String
