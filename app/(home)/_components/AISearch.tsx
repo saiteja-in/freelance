@@ -69,25 +69,25 @@ export default function AISearch() {
 
   return (
     <div className="w-full max-w-3xl mx-auto p-6 rounded-xl">
-      <div className=" backdrop-blur-md rounded-xl p-8 shadow-2xl text-white">
-        <div className="absolute inset-0 -z-10 h-full w-full bg-white [background:radial-gradient(125%_125%_at_50%_10%,#fff_40%,#63e_100%)]"></div>
+      <div className="relative backdrop-blur-md rounded-xl p-8 shadow-2xl">
+        {/* Background gradient - different for light/dark modes */}
+        <div className="absolute inset-0 -z-10 h-full w-full rounded-xl bg-background [background:radial-gradient(125%_125%_at_50%_10%,#c7d2fe_20%,#4338ca_100%)] dark:[background:radial-gradient(125%_125%_at_50%_10%,#1a1b1e_40%,#4338ca_100%)]" />
 
         {/* Toggle Bar */}
-        <div className="relative flex rounded-full p-1 mb-6 overflow-hidden">
+        <div className="relative flex rounded-full p-1 mb-6 bg-white/10 dark:bg-slate-800/50 overflow-hidden backdrop-blur-sm">
           {/* Animated Glider */}
           <motion.div
-            className="absolute top-1 left-1 bg-white rounded-full shadow-md transition-transform duration-300 ease-in-out z-0"
+            className="absolute top-1 left-1 bg-white dark:bg-slate-700 rounded-full shadow-md transition-transform duration-300 ease-in-out z-0"
             style={gliderStyle}
           />
-          <div className="absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem]">
-            <div className="absolute bottom-0 left-0 right-0 top-0 bg-[radial-gradient(circle_800px_at_100%_200px,#d5c5ff,transparent)]"></div>
-          </div>
-
+          
           <button
             ref={findRef}
             onClick={() => setActiveTab("find")}
             className={`relative z-10 flex-1 py-2 text-center font-medium text-sm rounded-full transition-colors ${
-              activeTab === "find" ? "text-blue-600" : "text-white"
+              activeTab === "find" 
+                ? "text-primary dark:text-primary-foreground" 
+                : "text-foreground/70 dark:text-slate-400"
             }`}
           >
             Find talent
@@ -96,7 +96,9 @@ export default function AISearch() {
             ref={browseRef}
             onClick={() => setActiveTab("browse")}
             className={`relative z-10 flex-1 py-2 text-center font-medium text-sm rounded-full transition-colors ${
-              activeTab === "browse" ? "text-blue-600" : "text-white"
+              activeTab === "browse" 
+                ? "text-primary dark:text-primary-foreground" 
+                : "text-foreground/70 dark:text-slate-400"
             }`}
           >
             Browse jobs
@@ -110,39 +112,39 @@ export default function AISearch() {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="Search by role, skills, or keywords"
-            className="w-full py-3 px-4 pr-16 bg-white text-blue-800 rounded-full focus:outline-none shadow-lg transition duration-200 ease-in-out focus:scale-105"
+            className="w-full py-3 px-4 pr-16 bg-card dark:bg-slate-800 text-foreground dark:text-slate-100 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-lg transition duration-200 ease-in-out focus:scale-105"
           />
           <motion.button
             onClick={getResponse}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="absolute right-1 top-1 bg-blue-700 hover:bg-blue-800 text-white rounded-full p-2 flex items-center justify-center shadow-md"
+            className="absolute right-1 top-1 bg-primary hover:bg-primary/90 dark:bg-primary/80 dark:hover:bg-primary/70 text-primary-foreground rounded-full p-2 flex items-center justify-center shadow-md"
           >
-            <Search className="h-5 w-5 text-yellow-400" />
+            <Search className="h-5 w-5" />
             <span className="ml-1 mr-2 font-medium">Search</span>
           </motion.button>
         </div>
 
         {/* Current Role Indicator */}
-        <div className="text-sm text-blue-100 mb-4">
-          Searching as: <span className="font-medium text-white">{role}</span>
+        <div className="text-sm text-muted-foreground dark:text-slate-400 mb-4">
+          Searching as: <span className="font-medium text-foreground dark:text-slate-200">{role}</span>
         </div>
 
         {/* Filters */}
         <div className="flex flex-wrap gap-2">
-          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer py-2 px-3">
+          <Badge className="bg-muted hover:bg-muted/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-foreground dark:text-slate-200 cursor-pointer py-2 px-3">
             <Filter className="mr-1 h-4 w-4" /> Advanced Filters
           </Badge>
-          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer py-2 px-3">
+          <Badge className="bg-muted hover:bg-muted/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-foreground dark:text-slate-200 cursor-pointer py-2 px-3">
             <Star className="mr-1 h-4 w-4" /> Company Rating
           </Badge>
-          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer py-2 px-3">
+          <Badge className="bg-muted hover:bg-muted/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-foreground dark:text-slate-200 cursor-pointer py-2 px-3">
             <DollarSign className="mr-1 h-4 w-4" /> Payment Range
           </Badge>
-          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer py-2 px-3">
+          <Badge className="bg-muted hover:bg-muted/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-foreground dark:text-slate-200 cursor-pointer py-2 px-3">
             <Clock className="mr-1 h-4 w-4" /> Time Zone Match
           </Badge>
-          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer py-2 px-3">
+          <Badge className="bg-muted hover:bg-muted/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-foreground dark:text-slate-200 cursor-pointer py-2 px-3">
             <Calendar className="mr-1 h-4 w-4" /> Deadline
           </Badge>
         </div>
