@@ -28,7 +28,7 @@ model User {
   password      String?
   accounts      Account[]
    upvotes      Upvote[]
-    products      Product[]
+  products      Product[]
   comments      Comment[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt 
