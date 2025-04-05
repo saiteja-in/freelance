@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { db } from "./db";
+import { CreateJobSchema, CreateJobSchemaType } from "@/app/_components/jobs.validator";
 
 interface ProductData {
     name: string;
@@ -270,3 +271,92 @@ interface ProductData {
       throw error;
     }
   };
+
+
+  export const createJob = async (data: CreateJobSchemaType) => {
+    try {
+      // Get authenticated user session
+      const session = await auth();
+      if (!session) {
+        return {
+          success: false,
+          error: "Unauthorized",
+        };
+      }
+  
+      const userId = session.user.id; // This should always be a string now
+  
+      // Validate input data using Zod schema
+      const parsed = CreateJobSchema.safeParse(data);
+      if (!parsed.success) {
+        return {
+          success: false,
+          error: "Bad request - Invalid data",
+          details: parsed.error.format(),
+        };
+      }
+  
+      // Get user's company information to populate job details
+      const user = await db.user.findUnique({
+        where: {
+          id: userId,
+        },
+        select: {
+          name: true,
+          email: true,
+          image: true,
+          bio: true,
+          location: true,
+          websiteLink: true,
+        },
+      });
+  
+      if (!user) {
+        return {
+          success: false,
+          error: "User not found",
+        };
+      }
+  
+      // Prepare job data
+      const jobData = {
+        posterId: userId!, // Non-null assertion: userId is guaranteed to be a string here
+        title: parsed.data.title,
+        companyName: parsed.data.companyName || user.name || "",
+        companyLogo: parsed.data.companyLogo || user.image || "",
+        companyDescription: parsed.data.companyDescription || user.bio || "",
+        companyWebsite: parsed.data.companyWebsite || user.websiteLink || "",
+        location: parsed.data.location || user.location || "",
+        minExperience: parseInt(parsed.data.minExp, 10) || 0,
+        maxExperience: parseInt(parsed.data.maxExp, 10) || 0,
+        minSalary: parsed.data.minSalary ? parseInt(parsed.data.minSalary, 10) : undefined,
+        maxSalary: parsed.data.maxSalary ? parseInt(parsed.data.maxSalary, 10) : undefined,
+        description: parsed.data.jobDesc,
+        jobType: parsed.data.jobType,
+        currency: parsed.data.currency,
+        applicationLink: parsed.data.link,
+        applicationEmail: parsed.data.applicationEmail || user.email,
+        isRemote: parsed.data.isRemote || false,
+        skillsRequired: parsed.data.skills,
+      };
+  
+      // Create the job record in the database
+      await db.job.create({
+        data: jobData,
+      });
+  
+      return {
+        success: true,
+        message: "Job created successfully",
+      };
+    } catch (err) {
+      console.error("Error in creating job: ", err);
+      return {
+        success: false,
+        error: "Internal server error",
+      };
+    }
+  };
+  
+  
+  

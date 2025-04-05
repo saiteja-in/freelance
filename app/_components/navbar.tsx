@@ -18,6 +18,7 @@ import {
 import { ModeToggle } from "./ModeToggle";
 import Submit from "./submit";
 import { Menu } from "./menu";
+import Jobs from "./jobs";
 
 const NavBar = async () => {
   const user = await currentUser();
@@ -62,6 +63,7 @@ const NavBar = async () => {
           
           {user ? (
             <>
+            <Jobs authenticatedUser={user} />
             <Submit products={[]} authenticatedUser={user} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

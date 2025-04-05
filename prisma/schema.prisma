@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -18,21 +15,182 @@ enum UserRole {
   USER
 }
 
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  role          UserRole  @default(USER)
-  password      String?
-  accounts      Account[]
-   upvotes      Upvote[]
-  products      Product[]
-  comments      Comment[]
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt 
+enum ExperienceRange {
+  ZERO_TO_ONE
+  ONE_TO_THREE
+  THREE_TO_SIX
+  SIX_PLUS
 }
+
+enum JobType {
+  PART_TIME
+  FULL_TIME
+  FREELANCE
+  INTERNSHIP
+}
+
+enum Currency {
+  INR
+  USD
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWED
+  SHORTLISTED
+  REJECTED
+  HIRED
+}
+
+model User {
+  id                String            @id @default(cuid())
+  name              String?
+  email             String            @unique
+  emailVerified     DateTime?
+  password          String?
+  image             String?           // User profile image/avatar
+  role              UserRole          @default(USER)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  
+  // Profile information
+  bio               String?
+  location          String?
+  
+  // Social links
+  githubLink        String?
+  portfolioLink     String?
+  linkedinLink      String?
+  twitterLink       String?
+  websiteLink       String?
+  
+  // Skills & Experience
+  skills            String[]          @default([])
+  resume            String?           // URL to resume file
+  experienceRange   ExperienceRange?
+  
+  // Relations
+  projects          Project[]
+  previousCompanies PreviousCompany[]
+  
+  // Jobs the user has posted (as employer)
+  postedJobs        Job[]             @relation("JobPoster")
+  
+  // Jobs the user has applied to (as job seeker)
+  applications      JobApplication[]  @relation("JobApplicant")
+  
+  // Jobs the user has bookmarked
+  bookmarks         Bookmark[]
+  
+  // Other relations from the product showcase feature
+  upvotes           Upvote[]
+  products          Product[]
+  comments          Comment[]
+  accounts          Account[]
+}
+
+model Project {
+  id           String   @id @unique @default(cuid())
+  userId       String
+  title        String    
+  githubURL    String?
+  deployedLink String
+  description  String
+  skills       String[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, title])
+  @@index([userId])
+}
+
+model PreviousCompany {
+  id             String   @id @unique @default(cuid())
+  userId         String
+  role           String
+  jobType        JobType
+  companyName    String
+  companyWebsite String?
+  duration       String
+  startDate      DateTime?
+  endDate        DateTime?
+  isCurrentJob   Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+model Job {
+  id                 String           @id @unique @default(cuid())
+  posterId           String           // User who posted this job
+  title              String
+  companyName        String
+  companyLogo        String?
+  companyDescription String?
+  companyWebsite     String?
+  jobType            JobType
+  minExperience      Int
+  maxExperience      Int
+  description        String           @db.Text
+  skillsRequired     String[]
+  minSalary          Int?
+  maxSalary          Int?
+  currency           Currency         @default(INR)
+  location           String?
+  isRemote           Boolean          @default(false)
+  isVerified         Boolean          @default(false)
+  postedAt           DateTime         @default(now())
+  applicationLink    String?          // External application link if any
+  applicationEmail   String?          // Email for applications if any
+  expiresAt          DateTime?
+  updatedAt          DateTime         @updatedAt
+  
+  // Relations
+  poster             User             @relation("JobPoster", fields: [posterId], references: [id], onDelete: Cascade)
+  applications       JobApplication[] @relation("JobApplications")
+  bookmarks          Bookmark[]
+  
+  @@index([posterId])
+}
+
+model JobApplication {
+  id          String            @id @default(cuid())
+  jobId       String
+  applicantId String            // User who applied to the job
+  status      ApplicationStatus @default(PENDING)
+  coverLetter String?           @db.Text
+  resumeUrl   String?           // URL to the resume for this specific application
+  appliedAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  notes       String?           @db.Text  // Notes from the job poster
+  
+  job         Job               @relation("JobApplications", fields: [jobId], references: [id], onDelete: Cascade)
+  applicant   User              @relation("JobApplicant", fields: [applicantId], references: [id], onDelete: Cascade)
+  
+  @@unique([applicantId, jobId])
+  @@index([applicantId])
+  @@index([jobId])
+}
+
+model Bookmark {
+  id          String   @id @default(cuid())
+  jobId       String
+  userId      String
+  createdAt   DateTime @default(now())
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, jobId])
+  @@index([userId])
+  @@index([jobId])
+}
+
 model Product {
   id          String     @id @default(cuid())
   name        String
@@ -42,24 +200,24 @@ model Product {
   description String
   logo        String
   website     String
-  github     String
+  github      String
   twitter     String
   comments    Comment[]
   upvotes     Upvote[]
   images      Image[]
-  categories  Category[] // Many-to-many relation with Category
+  categories  Category[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-  user        User       @relation(fields: [userId], references: [id])
   userId      String
-  // releaseDate String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
+
 model Category {
   id       String    @id @default(cuid())
   name     String    @unique
-  products Product[] // Many-to-many relation with Product
+  products Product[]
 }
 
 model Image {
@@ -78,11 +236,11 @@ model Upvote {
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+ 
 }
-
 
 model Comment {
   id             String    @id @default(cuid())
@@ -115,7 +273,9 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
 }
+
 model VerificationToken {
   id String @id @default(cuid())
   email String
