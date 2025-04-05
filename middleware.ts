@@ -26,10 +26,10 @@ export default auth((req) => {
     }
     return;
   }
-  // if(!isLoggedIn && isProtectedRoute){
-  //   return Response.redirect(new URL("/auth/login", nextUrl));
+  if(!isLoggedIn && isProtectedRoute){
+    return Response.redirect(new URL("/auth/login", nextUrl));
 
-  // }
+  }
   // return;
   if (!isLoggedIn && !isPublicRoute) {
     return Response.redirect(new URL("/auth/login", nextUrl));

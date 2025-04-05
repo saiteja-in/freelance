@@ -27,6 +27,75 @@ model User {
   role          UserRole  @default(USER)
   password      String?
   accounts      Account[]
+   upvotes      Upvote[]
+    products      Product[]
+  comments      Comment[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt 
+}
+model Product {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  headline    String
+  rank        Int
+  description String
+  logo        String
+  website     String
+  github     String
+  twitter     String
+  comments    Comment[]
+  upvotes     Upvote[]
+  images      Image[]
+  categories  Category[] // Many-to-many relation with Category
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  user        User       @relation(fields: [userId], references: [id])
+  userId      String
+  // releaseDate String
+
+  @@index([userId])
+}
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  products Product[] // Many-to-many relation with Product
+}
+
+model Image {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+}
+
+model Upvote {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model Comment {
+  id             String    @id @default(cuid())
+  profilePicture String
+  productId      String
+  product        Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User      @relation(fields: [userId], references: [id])
+  body           String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  
 }
 
 model Account {

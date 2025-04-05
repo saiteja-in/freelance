@@ -16,6 +16,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ModeToggle } from "./ModeToggle";
+import Submit from "./submit";
+import { Menu } from "./menu";
 
 const NavBar = async () => {
   const user = await currentUser();
@@ -50,13 +52,17 @@ const NavBar = async () => {
             </Button>
           </nav>
         </div>
-
+<div>
+  <Menu/>
+</div>
         <div className="flex items-center gap-4">
           <div className="transition-transform duration-300 hover:scale-105">
             <ModeToggle />
           </div>
           
           {user ? (
+            <>
+            <Submit products={[]} authenticatedUser={user} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 
@@ -79,7 +85,7 @@ const NavBar = async () => {
                 className="w-56 animate-in fade-in-0 zoom-in-95" 
                 align="end" 
                 forceMount
-              >
+                >
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{user.name}</p>
@@ -104,7 +110,7 @@ const NavBar = async () => {
                 <DropdownMenuItem
                   className="cursor-pointer text-red-600 transition-colors duration-300 hover:bg-red-100 focus:bg-red-100 dark:hover:bg-red-900/50 dark:focus:bg-red-900/50"
                   asChild
-                >
+                  >
                   <form action={logout} className="w-full">
                     <button type="submit" className="flex w-full items-center">
                       <LogOut className="mr-2 h-4 w-4" />
@@ -114,6 +120,7 @@ const NavBar = async () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+          </>
           ) : (
             <LoginButton>
               <Button className="font-medium transition-transform duration-300 hover:scale-105">
@@ -123,8 +130,8 @@ const NavBar = async () => {
           )}
         </div>
       </div>
-    </div>
-  );
+      </div>
+    );
 };
 
 export default NavBar;
