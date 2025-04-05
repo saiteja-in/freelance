@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Search, ChevronDown, DollarSign, Briefcase, Clock, X } from 'lucide-react';
+import { Search, ChevronDown, DollarSign, Briefcase, Clock, X, Hash } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -24,10 +24,23 @@ export const experienceFilterItems = [
 
 export const payFilterItems = ['0-10', '10-20', '20-50', '50-100', '100+'];
 
+export const skillFilterItems = [
+  // Web Development
+  'React', 'Angular', 'Vue.js', 'Node.js', 'JavaScript', 'TypeScript', 'HTML', 'CSS', 'Sass', 'Less', 'jQuery', 'PHP', 'Laravel', 'Symfony', 'Ruby on Rails', 'ASP.NET', 'Django', 'Flask', 'WordPress', 'Shopify', 'Wix', 'Webflow', 'Web Design', 'UI/UX Design', 'Web Development', 'E-commerce', 'Web3',
+
+  // AI & Machine Learning (Related to Web Dev)
+  'AI', 'Machine Learning', 'Deep Learning', 'Python (for ML/AI in Web)', 'JavaScript (for ML/AI in Web)', 'TensorFlow.js', 'PyTorch (for Web)', 'Natural Language Processing (NLP)', 'Computer Vision', 'Data Science (Web Context)', 'ML APIs', 'AI Chatbots', 'Generative AI',
+  'Cloud (for AI/ML Web)', 'Serverless (for AI/ML Web)',
+
+  //Database and Backend for Web/AI/ML
+  'SQL', 'MySQL', 'PostgreSQL', 'MongoDB', 'NoSQL', 'Firebase', 'Cloud Databases', 'API Development', 'REST APIs', 'GraphQL', 'Backend Development'
+];
+
 interface Props {
   handleCommitment: (type: string) => void;
   handleExp: (exp: string) => void;
   handlePay: (pay: string) => void;
+  handleSkills: (skills: string) => void;
   searchQuery: string;
   handleSearch: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
@@ -38,15 +51,17 @@ export default function JobFilter({
   handlePay,
   searchQuery,
   handleSearch,
+  handleSkills
 }: Props) {
   const searchParams = useSearchParams();
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   const commitmentTypes = searchParams.getAll('commitment');
   const experienceTypes = searchParams.getAll('exp');
+  const skillTypes = searchParams.getAll('skills');
   const payTypes = searchParams.getAll('pay');
 
-  const totalFilterCount = commitmentTypes.length + experienceTypes.length + payTypes.length;
+  const totalFilterCount = commitmentTypes.length + experienceTypes.length + payTypes.length+ skillTypes.length;
 
   const FilterContent = () => (
     <div className="flex w-full flex-col space-y-6">
@@ -73,6 +88,20 @@ export default function JobFilter({
               <X 
                 className="h-3 w-3 cursor-pointer" 
                 onClick={() => handleCommitment(type)}
+              />
+            </Badge>
+          ))}
+
+          {skillTypes.map((skill) => (
+            <Badge 
+              key={skill} 
+              variant="secondary"
+              className="flex items-center gap-1 bg-pink-500/20 text-pink-300"
+            >
+              {skill}
+              <X 
+                className="h-3 w-3 cursor-pointer" 
+                onClick={() => handleSkills(skill)}
               />
             </Badge>
           ))}
@@ -204,6 +233,39 @@ export default function JobFilter({
                     <DollarSign className="h-3 w-3" />
                     {pay}k
                   </span>
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="skills" className="border-zinc-800">
+          <AccordionTrigger className="py-3 text-sm font-medium hover:no-underline">
+            <div className="flex items-center gap-2">
+              <Hash className="h-4 w-4 text-pink-500" />
+              <span>Skills</span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="pt-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {skillFilterItems.map((skill) => (
+                <div 
+                  key={skill} 
+                  className={`flex cursor-pointer items-center gap-2 rounded-md border p-2 text-sm transition-all ${
+                    skillTypes.includes(skill) 
+                      ? 'border-pink-500 bg-pink-500/10 text-pink-300' 
+                      : 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-zinc-700'
+                  }`}
+                  onClick={() => handleSkills(skill)}
+                >
+                  <div className={`flex h-4 w-4 items-center justify-center rounded-sm border ${
+                    skillTypes.includes(skill) 
+                      ? 'border-pink-500 bg-pink-500 text-white' 
+                      : 'border-zinc-600'
+                  }`}>
+                    {skillTypes.includes(skill) && <Check className="h-3 w-3" />}
+                  </div>
+                  <span>{skill}</span>
                 </div>
               ))}
             </div>
