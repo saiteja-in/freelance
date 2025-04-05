@@ -318,26 +318,26 @@ interface ProductData {
     try {
       // Get authenticated user session
       const session = await auth();
-      if (!session) {
+      if (!session || !session.user.id) {
         return {
           success: false,
-          error: "Unauthorized",
+          error: 'Unauthorized', // Handle case where user is not authenticated
         };
       }
   
-      const userId = session.user.id; // This should always be a string now
+      const userId = session.user.id; // `userId` is guaranteed to be a string now
   
       // Validate input data using Zod schema
       const parsed = CreateJobSchema.safeParse(data);
       if (!parsed.success) {
         return {
           success: false,
-          error: "Bad request - Invalid data",
+          error: 'Bad request - Invalid data',
           details: parsed.error.format(),
         };
       }
   
-      // Get user's company information to populate job details
+      // Get user's company information
       const user = await db.user.findUnique({
         where: {
           id: userId,
@@ -355,19 +355,19 @@ interface ProductData {
       if (!user) {
         return {
           success: false,
-          error: "User not found",
+          error: 'User not found',
         };
       }
   
       // Prepare job data
       const jobData = {
-        posterId: userId!, // Non-null assertion: userId is guaranteed to be a string here
+        posterId: userId, // Now guaranteed to be a string
         title: parsed.data.title,
-        companyName: parsed.data.companyName || user.name || "",
-        companyLogo: parsed.data.companyLogo || user.image || "",
-        companyDescription: parsed.data.companyDescription || user.bio || "",
-        companyWebsite: parsed.data.companyWebsite || user.websiteLink || "",
-        location: parsed.data.location || user.location || "",
+        companyName: parsed.data.companyName || user.name || '',
+        companyLogo: parsed.data.companyLogo || user.image || '',
+        companyDescription: parsed.data.companyDescription || user.bio || '',
+        companyWebsite: parsed.data.companyWebsite || user.websiteLink || '',
+        location: parsed.data.location || user.location || '',
         minExperience: parseInt(parsed.data.minExp, 10) || 0,
         maxExperience: parseInt(parsed.data.maxExp, 10) || 0,
         minSalary: parsed.data.minSalary ? parseInt(parsed.data.minSalary, 10) : undefined,
@@ -379,6 +379,7 @@ interface ProductData {
         applicationEmail: parsed.data.applicationEmail || user.email,
         isRemote: parsed.data.isRemote || false,
         skillsRequired: parsed.data.skills,
+        ExpectedTime: parsed.data.ExpectedTime,  // New field
       };
   
       // Create the job record in the database
@@ -388,16 +389,18 @@ interface ProductData {
   
       return {
         success: true,
-        message: "Job created successfully",
+        message: 'Job created successfully',
       };
     } catch (err) {
-      console.error("Error in creating job: ", err);
+      console.error('Error in creating job: ', err);
       return {
         success: false,
-        error: "Internal server error",
+        error: 'Internal server error',
       };
     }
   };
+  
+  
   
   
   export const getJobs = async (
@@ -575,54 +578,140 @@ interface ProductData {
   };
 
 
-  export const applyJob = async (jobId: string) => {
+  export const applyJob = async (
+    jobId: string,
+    ProposedPrice: number,
+    ProposedDate: string,
+    Message: string
+  ) => {
+    console.log(jobId);
+    console.log(ProposedDate);
+    console.log(ProposedPrice);
+    console.log(Message);
+  
     try {
-      const session = await auth()
-      if (!session) {
+      // Check if the user is authenticated
+      const session = await auth();
+      if (!session || !session.user || !session.user.id) {
         return {
           success: false,
-          error: 'Unauthorised',
+          error: 'Unauthorized', // If session or user id is missing, return Unauthorized
         };
       }
   
-      // const customSession = session as CustomSession;
-      const id = session.user.id
-      if (!jobId) {
-        return {
-          success: false,
-          error: 'Bad request',
-        };
-      }
+      const id = session.user.id;
   
-      // const isRecordAlreadyExists = await db.applied.findUnique({
-      //   where: {
-      //     jobSeekerId: id,
-      //   },
-      // });
-  
-      // if (isRecordAlreadyExists) {
-      //   return {
-      //     success: false,
-      //     error: 'Already applied',
-      //   };
-      // }
-  
-      await db.applied.create({
-        data: {
+      // Check if the user has already applied for the job
+      const isRecordAlreadyExists = await db.applied.findFirst({
+        where: {
           jobSeekerId: id,
           jobId: jobId,
         },
       });
   
+      if (isRecordAlreadyExists) {
+        return {
+          success: false,
+          error: 'Already applied',
+        };
+      }
+  
+      // Get employer information from the job
+      const job = await db.job.findUnique({
+        where: { id: jobId },
+        select: {
+          posterId: true, // The user who posted the job
+        },
+      });
+  
+      if (!job) {
+        return {
+          success: false,
+          error: 'Job not found',
+        };
+      }
+  
+      const employerId = job.posterId;
+  
+      // Apply for the job
+      await db.applied.create({
+        data: {
+          jobSeekerId: id, // `id` is guaranteed to be a string
+          jobId: jobId,
+          employerId: employerId, // Set employerId from the job poster
+          ProposedPrice,
+          ProposedDate: new Date(ProposedDate), // Ensure the ProposedDate is a valid Date object
+          Message,
+        },
+      });
+  
       return {
         success: true,
-        message: 'applied',
+        message: 'Applied successfully',
       };
     } catch (err) {
-      console.error('error adding applied data : ', err);
+      console.error('Error adding applied data:', err);
       return {
         success: false,
         error: 'Internal server error',
       };
+    }
+  };
+  
+  
+  
+  
+
+  export const getJobSeekerCards = async () => {
+    try {
+      const authenticatedUser = await auth();
+      if (!authenticatedUser || !authenticatedUser.user?.id) {
+        throw new Error("Unauthorized");
+      }
+  
+      const jobSeekerId = authenticatedUser.user.id;
+  
+      // Fetch applied jobs with only the necessary fields
+      const appliedJobs = await db.applied.findMany({
+        where: {
+          jobSeekerId,
+        },
+        include: {
+          job: {
+            select: {
+              id: true,
+              title: true,
+              companyName: true,
+              location: true,
+              minExperience: true,
+              maxExperience: true,
+              description: true,
+              skillsRequired: true,
+              minSalary: true,
+              maxSalary: true,
+              currency: true,
+              ExpectedTime: true,
+            },
+          },
+        },
+      });
+  
+      return appliedJobs.map((appliedJob) => ({
+        jobId: appliedJob.job.id,
+        title: appliedJob.job.title,
+        companyName: appliedJob.job.companyName,
+        location: appliedJob.job.location,
+        minExperience: appliedJob.job.minExperience,
+        maxExperience: appliedJob.job.maxExperience,
+        description: appliedJob.job.description,
+        skillsRequired: appliedJob.job.skillsRequired,
+        minSalary: appliedJob.job.minSalary,
+        maxSalary: appliedJob.job.maxSalary,
+        currency: appliedJob.job.currency,
+        ExpectedTime: appliedJob.job.ExpectedTime,
+      }));
+    } catch (error) {
+      console.error("Error fetching applied jobs:", error);
+      throw new Error("Failed to fetch applied jobs");
     }
   };

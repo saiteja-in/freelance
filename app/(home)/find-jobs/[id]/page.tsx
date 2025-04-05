@@ -8,7 +8,7 @@ import {
   IndianRupee,
   MapPin,
   BookmarkIcon,
-  ExternalLink
+  ExternalLink,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
@@ -18,11 +18,16 @@ import { Job } from '@prisma/client';
 import { useSession } from 'next-auth/react';
 import { Spinner } from '@/components/ui/spinner';
 import { applyJob, getJobDetails } from '@/lib/server-actions';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'; // adjust import as per your project
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ApplyJobSchema, ApplyJobSchemaType } from '@/app/_components/jobschema.validator';
 
 export default function Page() {
   const [jobDetails, setJobDetails] = useState<Job | null>(null);
   const [loading, setLoading] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
 
   const { status, data: session } = useSession();
   const router = useRouter();
@@ -47,15 +52,35 @@ export default function Page() {
     }
   };
 
-  const handleApply = async (jobId: string, link: string) => {
+  // Set up react-hook-form for the Apply dialog
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ApplyJobSchemaType>({
+    resolver: zodResolver(ApplyJobSchema),
+  });
+
+  const handleApplySubmit = async (data: ApplyJobSchemaType) => {
     try {
-      const { success, error } = await applyJob(jobId);
+      // Call the backend applyJob action with the additional fields
+      const { ProposedPrice, ProposedDate, Message } = data;
+      const { success, error } = await applyJob(
+        jobDetails!.id,
+        ProposedPrice,
+        ProposedDate,
+        Message
+      );
       if (!success) {
         toast.error(error || 'Failed to apply for this job');
         return;
       }
       toast.success('Successfully applied for this job!');
-      router.push(link);
+      setOpenDialog(false);
+      reset();
+      // Redirect after applying (using the job's application link if available)
+      router.push( '/');
     } catch (error) {
       console.error('Error applying: ', error);
       toast.error('Something went wrong while applying');
@@ -65,7 +90,7 @@ export default function Page() {
   const toggleBookmark = () => {
     setBookmarked(!bookmarked);
     toast.success(bookmarked ? 'Removed from bookmarks' : 'Added to bookmarks');
-    // Implement actual bookmark logic here
+    // Implement actual bookmark logic here if needed
   };
 
   useEffect(() => {
@@ -78,7 +103,7 @@ export default function Page() {
     router.back();
     return null;
   }
-  
+
   if (loading || status === 'loading') {
     return (
       <div className="flex h-[90vh] w-full flex-col items-center justify-center p-10 dark:text-white text-gray-800">
@@ -92,7 +117,7 @@ export default function Page() {
     return (
       <div className="flex h-[90vh] w-full flex-col items-center justify-center p-10 dark:text-white text-gray-800">
         <p className="text-lg font-medium">Job not found</p>
-        <button 
+        <button
           onClick={() => router.back()}
           className="mt-4 flex items-center text-pink-600 hover:text-pink-700 transition-colors"
         >
@@ -145,35 +170,35 @@ export default function Page() {
                   </p>
                   <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-2">
                     <Calendar className="h-4 w-4 mr-1.5" />
-                    <p>Posted on {jobDetails.postedAt.toLocaleDateString('en-US', { 
-                      year: 'numeric', 
-                      month: 'short', 
-                      day: 'numeric' 
-                    })}</p>
+                    <p>
+                      Posted on{' '}
+                      {jobDetails.postedAt.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </p>
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center space-x-3">
                 <button
                   className="flex items-center justify-center h-10 px-6 py-2 text-sm font-medium text-white bg-pink-600 rounded-md hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
-                  onClick={() => handleApply(
-                    jobDetails.id as string,
-                    jobDetails.applicationLink as string,
-                  )}
+                  onClick={() => setOpenDialog(true)}
                 >
                   Apply Now <ExternalLink className="ml-2 h-4 w-4" />
                 </button>
                 <button
                   onClick={toggleBookmark}
                   className={`h-10 w-10 rounded-md flex items-center justify-center transition-colors ${
-                    bookmarked 
-                      ? 'bg-pink-100 text-pink-600 dark:bg-pink-900 dark:text-pink-400' 
+                    bookmarked
+                      ? 'bg-pink-100 text-pink-600 dark:bg-pink-900 dark:text-pink-400'
                       : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400'
                   }`}
-                  aria-label={bookmarked ? "Remove from bookmarks" : "Add to bookmarks"}
+                  aria-label={bookmarked ? 'Remove from bookmarks' : 'Add to bookmarks'}
                 >
-                  <BookmarkIcon className="h-5 w-5" fill={bookmarked ? "currentColor" : "none"} />
+                  <BookmarkIcon className="h-5 w-5" fill={bookmarked ? 'currentColor' : 'none'} />
                 </button>
               </div>
             </div>
@@ -183,28 +208,36 @@ export default function Page() {
           <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="flex flex-col">
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Job Type</span>
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Job Type
+                </span>
                 <span className="mt-1 font-medium text-gray-900 dark:text-white flex items-center">
                   <Briefcase className="h-4 w-4 text-pink-500 mr-2" />
                   {jobDetails.jobType}
                 </span>
               </div>
               <div className="flex flex-col">
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Location</span>
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Location
+                </span>
                 <span className="mt-1 font-medium text-gray-900 dark:text-white flex items-center">
                   <MapPin className="h-4 w-4 text-pink-500 mr-2" />
                   Remote
                 </span>
               </div>
               <div className="flex flex-col">
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Experience</span>
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Experience
+                </span>
                 <span className="mt-1 font-medium text-gray-900 dark:text-white flex items-center">
                   <Briefcase className="h-4 w-4 text-pink-500 mr-2" />
                   {`${jobDetails.minExperience}-${jobDetails.maxExperience}`} YOE
                 </span>
               </div>
               <div className="flex flex-col">
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Salary</span>
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Salary
+                </span>
                 <span className="mt-1 font-medium text-gray-900 dark:text-white flex items-center">
                   {jobDetails.currency === 'INR' ? (
                     <IndianRupee className="h-4 w-4 text-pink-500 mr-2" />
@@ -268,16 +301,74 @@ export default function Page() {
             </p>
             <button
               className="px-5 py-2 text-sm font-medium text-white bg-pink-600 rounded-md hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
-              onClick={() => handleApply(
-                jobDetails.id as string,
-                jobDetails.applicationLink as string,
-              )}
+              onClick={() => setOpenDialog(true)}
             >
               Apply for this position
             </button>
           </div>
         </div>
       </div>
+
+      {/* Apply Dialog */}
+      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Apply for this Job</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit(handleApplySubmit)}>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Proposed Price (in INR)
+              </label>
+              <input
+                type="number"
+                {...register('ProposedPrice', { valueAsNumber: true })}
+                className="mt-1 w-full p-2 border border-gray-300 rounded-md"
+              />
+              {errors.ProposedPrice && (
+                <p className="text-sm text-red-500">{errors.ProposedPrice.message}</p>
+              )}
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Proposed Date
+              </label>
+              <input
+                type="date"
+                {...register('ProposedDate')}
+                className="mt-1 w-full p-2 border border-gray-300 rounded-md"
+              />
+              {errors.ProposedDate && (
+                <p className="text-sm text-red-500">{errors.ProposedDate.message}</p>
+              )}
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Message
+              </label>
+              <textarea
+                {...register('Message')}
+                className="mt-1 w-full p-2 border border-gray-300 rounded-md"
+              />
+              {errors.Message && (
+                <p className="text-sm text-red-500">{errors.Message.message}</p>
+              )}
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setOpenDialog(false)}
+                className="px-4 py-2 text-gray-600"
+              >
+                Cancel
+              </button>
+              <button type="submit" className="px-4 py-2 bg-pink-600 text-white rounded-md">
+                Apply
+              </button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

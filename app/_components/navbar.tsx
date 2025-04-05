@@ -110,11 +110,20 @@ const NavBar = async () => {
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link 
-                      href="/your-jobs" 
+                      href="/your-bids" 
                       className="cursor-pointer transition-colors duration-300 hover:bg-primary/10"
                     >
                       <Magnet className="mr-2 h-4 w-4" />
-                      <span>Your Jobs</span>
+                      <span>Your Bids</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link 
+                      href="/proposals" 
+                      className="cursor-pointer transition-colors duration-300 hover:bg-primary/10"
+                    >
+                      <Magnet className="mr-2 h-4 w-4" />
+                      <span>Proposals for your job</span>
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
