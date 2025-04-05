@@ -98,7 +98,7 @@ const NavBar = async () => {
                 <DropdownMenuGroup>
                   <DropdownMenuItem asChild>
                     <Link 
-                      href="/settings" 
+                      href="/profile" 
                       className="cursor-pointer transition-colors duration-300 hover:bg-primary/10"
                     >
                       <User className="mr-2 h-4 w-4" />
