@@ -3,10 +3,13 @@ import { ThemeProvider } from "@/components/theme-provider";
 import localFont from "next/font/local";
 import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
+import "@uploadthing/react/styles.css";
 // import NavBar from "./_components/navbar";
 import { Footer } from "./_components/footer";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth";
+import { Toaster } from "sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -42,10 +45,14 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <TooltipProvider>
+
             {/* <NavBar /> */}
             <NextTopLoader/>
             <main>{children}</main>
+            <Toaster />
             {/* <Footer /> */}
+            </TooltipProvider>
           </ThemeProvider>
         </body>
       </html>
