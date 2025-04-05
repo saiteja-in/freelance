@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { db } from "./db";
+import { JobType } from '@prisma/client';
 import { CreateJobSchema, CreateJobSchemaType } from "@/app/_components/jobs.validator";
 
 interface ProductData {
@@ -359,4 +360,140 @@ interface ProductData {
   };
   
   
+  export const getJobs = async (
+    page: number,
+    limit: number,
+    searchQuery?: string,
+    commitmentTypes?: string[],
+    experienceTypes?: string[],
+    payTypes?: string[],
+  ) => {
+    try {
+      const skipRecords = (page - 1) * limit;
   
+      const expRanges = experienceTypes?.map((exp) => {
+        if (exp.includes('+')) {
+          const minExp = parseInt(exp.replace('+', '').trim());
+          return { min: minExp, max: 100 };
+        }
+  
+        const [min, max] = exp
+          .split('-')
+          .map((num) => parseInt(num.replace('YOE', '').trim()));
+  
+        return { min, max };
+      });
+  
+      const payRanges = payTypes?.map((pay) => {
+        if (pay.includes('+')) {
+          const minPay = parseInt(pay.replace('+', '').trim());
+          return { min: minPay, max: 10000 };
+        }
+  
+        const [min, max] = pay.split('-').map((num) => parseInt(num));
+  
+        return { min, max };
+      });
+  
+      const [jobs, totalCount] = await Promise.all([
+        db.job.findMany({
+          take: limit,
+          where: {
+            AND: [
+              {
+                ...(searchQuery
+                  ? { title: { contains: searchQuery, mode: 'insensitive' } }
+                  : {}),
+              },
+              {
+                ...(commitmentTypes && commitmentTypes.length > 0
+                  ? {
+                      jobType: { in: commitmentTypes as JobType[] },
+                    }
+                  : {}),
+              },
+              {
+                ...(experienceTypes && experienceTypes.length > 0
+                  ? {
+                      OR: expRanges?.map((range) => ({
+                        AND: [
+                          { minExperience: { lte: range.max } },
+                          { maxExperience: { gte: range.min } },
+                        ],
+                      })),
+                    }
+                  : {}),
+              },
+              {
+                ...(payTypes && payTypes.length > 0
+                  ? {
+                      OR: payRanges?.map((range) => ({
+                        AND: [
+                          { minSalary: { lte: range.max * 1000 } },
+                          { maxSalary: { gte: range.min * 1000 } },
+                        ],
+                      })),
+                    }
+                  : {}),
+              },
+            ],
+          },
+          skip: skipRecords,
+          orderBy: {
+            postedAt: 'desc',
+          },
+        }),
+  
+        db.job.count({
+          where: {
+            AND: [
+              {
+                ...(searchQuery
+                  ? { title: { contains: searchQuery, mode: 'insensitive' } }
+                  : {}),
+              },
+              {
+                ...(commitmentTypes && commitmentTypes.length > 0
+                  ? {
+                      jobType: { in: commitmentTypes as JobType[] },
+                    }
+                  : {}),
+              },
+              {
+                ...(experienceTypes && experienceTypes.length > 0
+                  ? {
+                      OR: expRanges?.map((range) => ({
+                        AND: [
+                          { minExperience: { lte: range.max } },
+                          { maxExperience: { gte: range.min } },
+                        ],
+                      })),
+                    }
+                  : {}),
+              },
+              {
+                ...(payTypes && payTypes.length > 0
+                  ? {
+                      OR: payRanges?.map((range) => ({
+                        AND: [
+                          { minSalary: { lte: range.max * 1000 } },
+                          { maxSalary: { gte: range.min * 1000 } },
+                        ],
+                      })),
+                    }
+                  : {}),
+              },
+            ],
+          },
+        }),
+      ]);
+      console.log(jobs);
+      return {
+        jobs,
+        hasMore: skipRecords + jobs.length < totalCount,
+      };
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+      throw new Error('Failed to fetch jobs');
+    }
+  };

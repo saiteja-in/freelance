@@ -24,7 +24,7 @@ const Submit: React.FC<SubmitProps> = ({ products, authenticatedUser }) => {
         onClick={handleClick}
         className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-800 transition-colors"
       >
-        Submit
+        Add Work
       </button>
     </div>
   );

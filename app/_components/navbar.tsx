@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { LayoutDashboard, Lightbulb, User, LogOut } from "lucide-react";
+import { LayoutDashboard, Lightbulb, User, LogOut, Magnet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LoginButton } from "@/components/auth/login-button";
 import { currentUser } from "@/lib/auth";
@@ -19,6 +19,7 @@ import { ModeToggle } from "./ModeToggle";
 import Submit from "./submit";
 import { Menu } from "./menu";
 import Jobs from "./jobs";
+import { PiJoystickBold } from "react-icons/pi";
 
 const NavBar = async () => {
   const user = await currentUser();
@@ -46,9 +47,9 @@ const NavBar = async () => {
               asChild
               className="group flex items-center gap-2 transition-all duration-300 hover:bg-primary/10"
             >
-              <Link href="/">
+              <Link href="/your-space">
                 <LayoutDashboard className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
-                <span className="font-medium">Dashboard</span>
+                <span className="font-medium">Your Space</span>
               </Link>
             </Button>
           </nav>
@@ -105,6 +106,15 @@ const NavBar = async () => {
                     >
                       <User className="mr-2 h-4 w-4" />
                       <span>Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link 
+                      href="/your-jobs" 
+                      className="cursor-pointer transition-colors duration-300 hover:bg-primary/10"
+                    >
+                      <Magnet className="mr-2 h-4 w-4" />
+                      <span>Your Jobs</span>
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
