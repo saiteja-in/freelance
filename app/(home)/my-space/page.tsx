@@ -9,10 +9,6 @@ import { Kanban } from "lucide-react";
 import { RiProgress1Fill } from "@remixicon/react";
 import Progress from "./progress";
 
-// export const metadata: Metadata = {
-//   title: "Experiment 02 - Crafted.is",
-// };
-
 export default function Page() {
   const [tab, setTab] = useState("chat");
 
@@ -23,67 +19,86 @@ export default function Page() {
   };
 
   return (
-    <div className="flex h-screen bg-background text-foreground">
+    <div className="flex h-[calc(100vh-4rem)] bg-background text-foreground">
       {/* Sidebar */}
-      <div className="w-64 pt-10 border-r p-4 space-y-4">
-        <Tabs value={tab} onValueChange={setTab} className="w-full">
-          <TabsList className="flex flex-col space-y-2">
-            <TabsTrigger value="chat" className="justify-start">
-              <span className="mr-2">💬</span> Chat
-            </TabsTrigger>
-            <TabsTrigger value="kanban" className="justify-start">
-              <Kanban className="w-4 h-4 mr-2" /> Kanban
-            </TabsTrigger>
-            <TabsTrigger value="progress" className="justify-start">
-              <RiProgress1Fill className="w-4 h-4 mr-2" /> Progress
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+      <div className="w-64 border-r bg-background/95 shadow-sm flex flex-col">
+        <div className="p-5 border-b">
+          {/* <h2 className="font-semibold text-lg">My Workspace</h2> */}
+        </div>
+        <div className="p-6 py-8 flex-1">
+          <Tabs value={tab} onValueChange={setTab} className="w-full">
+            <TabsList className="flex flex-col space-y-2 bg-transparent">
+              <TabsTrigger 
+                value="chat" 
+                className="justify-start w-full px-4 py-3 text-sm font-medium transition-all rounded-md hover:bg-accent"
+              >
+                <span className="mr-2 text-lg">💬</span> Chat
+              </TabsTrigger>
+              <TabsTrigger 
+                value="kanban" 
+                className="justify-start w-full px-4 py-3 text-sm font-medium transition-all rounded-md hover:bg-accent"
+              >
+                <Kanban className="w-4 h-4 mr-2" /> Kanban
+              </TabsTrigger>
+              <TabsTrigger 
+                value="progress" 
+                className="justify-start w-full px-4 py-3 text-sm font-medium transition-all rounded-md hover:bg-accent"
+              >
+                <RiProgress1Fill className="w-4 h-4 mr-2" /> Progress
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-6 overflow-auto">
-        <AnimatePresence mode="wait">
-          {tab === "chat" && (
-            <motion.div
-              key="chat"
-              variants={tabContentVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              transition={{ duration: 0.2 }}
-            >
-              <Chat />
-            </motion.div>
-          )}
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-6 h-full">
+          <AnimatePresence mode="wait">
+            {tab === "chat" && (
+              <motion.div
+                key="chat"
+                variants={tabContentVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={{ duration: 0.2 }}
+                className="h-full"
+              >
+                <Chat />
+              </motion.div>
+            )}
 
-          {tab === "kanban" && (
-            <motion.div
-              key="kanban"
-              variants={tabContentVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              transition={{ duration: 0.2 }}
-            >
-              {/* Replace this with your actual Kanban component */}
-              <div className="text-lg font-semibold">Kanban Board goes here</div>
-            </motion.div>
-          )}
+            {tab === "kanban" && (
+              <motion.div
+                key="kanban"
+                variants={tabContentVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={{ duration: 0.2 }}
+                className="h-full"
+              >
+                {/* Replace this with your actual Kanban component */}
+                <div className="text-lg font-semibold">Kanban Board goes here</div>
+              </motion.div>
+            )}
 
-          {tab === "progress" && (
-            <motion.div
-              key="progress"
-              variants={tabContentVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              transition={{ duration: 0.2 }}
-            >
-              <Progress/>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            {tab === "progress" && (
+              <motion.div
+                key="progress"
+                variants={tabContentVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={{ duration: 0.2 }}
+                className="h-full"
+              >
+                <Progress/>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

@@ -80,16 +80,13 @@ export default function AISearch() {
       <div className=" backdrop-blur-md rounded-xl p-8 shadow-2xl text-white">
 
         {/* Toggle Bar */}
-        <div className="relative flex rounded-full p-1 mb-6 overflow-hidden">
+        <div className="relative flex rounded-full p-1 mb-6 bg-white/10 dark:bg-slate-800/50 overflow-hidden backdrop-blur-sm">
           {/* Animated Glider */}
           <motion.div
-            className="absolute top-1 left-1 bg-white rounded-full shadow-md transition-transform duration-300 ease-in-out z-0"
+            className="absolute top-1 left-1 bg-white dark:bg-slate-700 rounded-full shadow-md transition-transform duration-300 ease-in-out z-0"
             style={gliderStyle}
           />
-          <div className="absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem]">
-            <div className="absolute bottom-0 left-0 right-0 top-0 bg-[radial-gradient(circle_800px_at_100%_200px,#d5c5ff,transparent)]"></div>
-          </div>
-
+          
           <button
             ref={findRef}
             onClick={() => setActiveTab("find")}
@@ -123,16 +120,16 @@ export default function AISearch() {
             onClick={getResponse}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="absolute right-1 top-1 bg-blue-700 hover:bg-blue-800 text-white rounded-full p-2 flex items-center justify-center shadow-md"
+            className="absolute right-1 top-1 bg-primary hover:bg-primary/90 dark:bg-primary/80 dark:hover:bg-primary/70 text-primary-foreground rounded-full p-2 flex items-center justify-center shadow-md"
           >
-            <Search className="h-5 w-5 text-yellow-400" />
+            <Search className="h-5 w-5" />
             <span className="ml-1 mr-2 font-medium">Search</span>
           </motion.button>
         </div>
 
         {/* Current Role Indicator */}
-        <div className="text-sm text-blue-100 mb-4">
-          Searching as: <span className="font-medium text-white">{role}</span>
+        <div className="text-sm text-muted-foreground dark:text-slate-400 mb-4">
+          Searching as: <span className="font-medium text-foreground dark:text-slate-200">{role}</span>
         </div>
 
         {/* Filters */}

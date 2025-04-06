@@ -50,19 +50,20 @@ export default function CreateJobForm() {
       setLoading(true);
       const response = await createJob(data);
       if (response.success) {
-        toast.success(response.message);
-        
+        toast.success("🎉 Job posted successfully!");
       } else {
-        toast.error(response.error);
+        toast.error(response.error || "Failed to post the job. Please try again.");
       }
     } catch (error) {
       console.error('Error during creating job : ', error);
+      toast.error("Something went wrong while posting the job.");
     } finally {
       setLoading(false);
-      reset()
-      setSkills('')
+      reset();
+      setSkills('');
     }
   };
+    
 
   useEffect(() => {
     setValue('skills', skills.split(','));

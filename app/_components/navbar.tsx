@@ -47,7 +47,7 @@ const NavBar = async () => {
               asChild
               className="group flex items-center gap-2 transition-all duration-300 hover:bg-primary/10"
             >
-              <Link href="/your-space">
+              <Link href="/my-space">
                 <LayoutDashboard className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
                 <span className="font-medium">Your Space</span>
               </Link>
