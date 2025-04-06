@@ -32,7 +32,7 @@ const AppliedJobs: React.FC = () => {
       try {
         const appliedJobs = await getJobSeekerCards();
         console.log(appliedJobs)
-        const jobsWithStatus = appliedJobs.map(job => ({
+        const jobsWithStatus = appliedJobs.map((job: Job) => ({
           ...job,
         }));
         setJobs(jobsWithStatus);
@@ -121,9 +121,9 @@ const AppliedJobs: React.FC = () => {
                 </CardContent>
 
                 <CardFooter className="p-4">
-                  <Button className="w-full bg-pink-600 text-white hover:bg-pink-700 dark:bg-pink-500 dark:hover:bg-pink-600">
+                  {/* <Button className="w-full bg-pink-600 text-white hover:bg-pink-700 dark:bg-pink-500 dark:hover:bg-pink-600">
                     View Details
-                  </Button>
+                  </Button> */}
                 </CardFooter>
               </Card>
             </motion.div>
