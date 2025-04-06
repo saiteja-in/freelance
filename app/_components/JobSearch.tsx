@@ -266,7 +266,7 @@ function JobSearchContent() {
                   
                   {!loading && !hasMore && jobs.length > 0 && (
                     <p className="text-sm text-zinc-500">
-                      You've reached the end of the list
+                      You&apos;ve reached the end of the list
                     </p>
                   )}
                 </div>

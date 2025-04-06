@@ -212,7 +212,7 @@ const Home = async () => {
                       <p className="text-sm text-slate-500 dark:text-slate-400">Freelance Developer</p>
                     </div>
                   </div>
-                  <p className="text-slate-700 dark:text-slate-300 italic">"I've secured consistent work and doubled my income since joining this platform. The quality of clients is exceptional."</p>
+                  <p className="text-slate-700 dark:text-slate-300 italic">Ive secured consistent work and doubled my income since joining this platform. The quality of clients is exceptional.</p>
                 </div>
                 <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
                   <div className="flex items-center mb-4">
@@ -224,7 +224,7 @@ const Home = async () => {
                       <p className="text-sm text-slate-500 dark:text-slate-400">Startup Founder</p>
                     </div>
                   </div>
-                  <p className="text-slate-700 dark:text-slate-300 italic">"We've built our entire development team through this platform. The talent quality and reliability have been outstanding."</p>
+                  <p className="text-slate-700 dark:text-slate-300 italic">Weve built our entire development team through this platform. The talent quality and reliability have been outstanding.</p>
                 </div>
                 <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
                   <div className="flex items-center mb-4">
@@ -236,7 +236,7 @@ const Home = async () => {
                       <p className="text-sm text-slate-500 dark:text-slate-400">UX Designer</p>
                     </div>
                   </div>
-                  <p className="text-slate-700 dark:text-slate-300 italic">"The opportunities I've found here have transformed my career. The platform makes it easy to showcase my portfolio and connect with clients."</p>
+                  <p className="text-slate-700 dark:text-slate-300 italic">The opportunities Ive found here have transformed my career. The platform makes it easy to showcase my portfolio and connect with clients.</p>
                 </div>
               </div>
             </div>
