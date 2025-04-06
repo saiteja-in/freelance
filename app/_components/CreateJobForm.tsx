@@ -44,6 +44,7 @@ export default function CreateJobForm() {
       const response = await createJob(data);
       if (response.success) {
         toast.success(response.message);
+        
       } else {
         toast.error(response.error);
       }

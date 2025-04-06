@@ -31,9 +31,9 @@ const AppliedJobs: React.FC = () => {
     const fetchAppliedJobs = async () => {
       try {
         const appliedJobs = await getJobSeekerCards();
+        console.log(appliedJobs)
         const jobsWithStatus = appliedJobs.map(job => ({
           ...job,
-          status: "PENDING" as const
         }));
         setJobs(jobsWithStatus);
       } catch (error) {

@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -76,9 +73,9 @@ model User {
   experienceRange   ExperienceRange?
   
   // Relations
-  projects          Project[] 
-  previousCompanies PreviousCompany[]
-  
+  // projects          Project[] 
+  // previousCompanies PreviousCompany[]
+
   // Jobs the user has posted (as employer)
   postedJobs        Job[]             @relation("JobPoster")
   
@@ -88,8 +85,15 @@ model User {
   // Jobs the user has bookmarked
   bookmarks         Bookmark[]
 
-  // Relation to Applied model
-  appliedJobs       Applied[]         @relation("JobSeekerApplied")
+  // Relation to Applied model (job seeker side)
+  jobSeekerApplications Applied[]     @relation("JobSeekerApplications")
+
+  // Relation to Applied model (employer side)
+  employerApplications Applied[]     @relation("EmployerApplications")
+
+  // Contracts (Freelancer and Client relations)
+  freelancerContracts Contract[]      @relation("FreelancerContracts")
+  clientContracts     Contract[]      @relation("ClientContracts")
 
   // Other relations from the product showcase feature
   upvotes           Upvote[]
@@ -98,41 +102,23 @@ model User {
   accounts          Account[]
 }
 
+model Contract {
+  id            String   @id @default(uuid())
+  freelancerId  String   // Job Seeker (Freelancer) ID
+  clientId      String   // Employer (Client) ID
+  bidId         String   // Reference to the Applied model (bidId)
+  jobId         String   // Job ID
 
-model Project {
-  id           String   @id @unique @default(cuid())
-  userId       String
-  title        String    
-  githubURL    String?
-  deployedLink String
-  description  String
-  skills       String[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@unique([userId, title])
-  @@index([userId])
-}
+  freelancer    User     @relation("FreelancerContracts", fields: [freelancerId], references: [id])
+  client        User     @relation("ClientContracts", fields: [clientId], references: [id])
 
-model PreviousCompany {
-  id             String   @id @unique @default(cuid())
-  userId         String
-  role           String
-  jobType        JobType
-  companyName    String
-  companyWebsite String?
-  duration       String
-  startDate      DateTime?
-  endDate        DateTime?
-  isCurrentJob   Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@index([userId])
+  job           Job      @relation(fields: [jobId], references: [id])
+  bid           Applied  @relation(fields: [bidId], references: [id])
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  Job Job[] @relation("JobContracts")
 }
 
 model Job {
@@ -142,7 +128,7 @@ model Job {
   companyName        String
   companyLogo        String?
   companyDescription String?
-  ExpectedTime String?
+  ExpectedTime       String?
   companyWebsite     String?
   jobType            JobType
   minExperience      Int
@@ -165,14 +151,18 @@ model Job {
   poster             User             @relation("JobPoster", fields: [posterId], references: [id], onDelete: Cascade)
   applications       JobApplication[] @relation("JobApplications")
   bookmarks          Bookmark[]
-    Applied            Applied[]
+  Applied            Applied[]
   
-  @@index([posterId])
+  // Add the reverse relation field for Contract
+  contracts          Contract[]        @relation("JobContracts")
+
+  Contract Contract[]
 }
+
 model Applied {
-  id            String                    @id @default(uuid())
-  jobSeekerId   String
-  jobId         String
+  id            String                     @id @default(uuid())
+  jobSeekerId   String                     // Reference to User (job seeker)
+  jobId         String                     // Reference to Job
   employerId    String
   ProposedPrice Int?
   ProposedDate  DateTime?
@@ -180,18 +170,13 @@ model Applied {
   status        ApplicationAssignmentStatus @default(PENDING)
 
   job           Job      @relation(fields: [jobId], references: [id])
-  employer      User     @relation("JobSeekerApplied", fields: [employerId], references: [id])
+  employer      User     @relation("EmployerApplications", fields: [employerId], references: [id])
+  jobSeeker     User     @relation("JobSeekerApplications", fields: [jobSeekerId], references: [id])
 
   @@unique([jobSeekerId, jobId])
+  Contract Contract[]
 }
 
-
-// model Contracts{
-//   id String @id @default(uuid())
-//   freelancerId @id
-//   clientId @id
-//   bidId @id
-// }
 model JobApplication {
   id          String            @id @default(cuid())
   jobId       String
@@ -273,7 +258,6 @@ model Upvote {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
- 
 }
 
 model Comment {
@@ -286,8 +270,6 @@ model Comment {
   body           String
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
-
-  
 }
 
 model Account {
@@ -326,5 +308,3 @@ model PasswordResetToken {
 
   @@unique([email, token])
 }
-//npx prisma generate
-//npx prisma db push
