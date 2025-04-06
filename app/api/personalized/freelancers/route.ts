@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
       params.append("commitment", parsedData.commitment);
     }
 
-    const url = `http://localhost:3000/find-jobs?${params.toString()}`;
+    const url = `/find-jobs?${params.toString()}`;
 
     console.log("printinnnnnnnnnng urll",url)
 

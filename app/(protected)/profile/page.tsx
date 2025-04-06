@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -67,7 +67,8 @@ export default function ProfilePage() {
   const [githubData, setGithubData] = useState<GitHubData | null>(null);
   const [githubLoading, setGithubLoading] = useState(false);
   const [githubError, setGithubError] = useState("");
-const router = useRouter();
+  const router = useRouter();
+  
   useEffect(() => {
     fetch('/api/user/profile')
       .then((res) => res.json())
@@ -75,6 +76,11 @@ const router = useRouter();
         setUser(data);
         setForm(data);
         setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error fetching user profile:', error);
+        setLoading(false);
+        toast.error('Failed to load profile data');
       });
   }, []);
 
@@ -356,7 +362,7 @@ const router = useRouter();
                 <div>
                   <h4 className="text-md font-semibold mb-2">Recent Repositories</h4>
                   <div className="grid gap-4 md:grid-cols-2">
-                    {githubData.repos.slice(0, 4).map((repo) => (
+                    {githubData.repos && githubData.repos.slice(0, 4).map((repo) => (
                       <div key={repo.id} className="border rounded-md p-4 hover:bg-slate-50">
                         <div className="flex justify-between items-start">
                           <h5 className="font-medium">{repo.name}</h5>
@@ -383,6 +389,7 @@ const router = useRouter();
                           <a 
                             href={repo.html_url} 
                             target="_blank" 
+                            rel="noopener noreferrer"
                             className="text-xs text-blue-600 hover:underline"
                           >
                             View Repository
@@ -397,7 +404,7 @@ const router = useRouter();
                 <div>
                   <h4 className="text-md font-semibold mb-2">Recent Activity</h4>
                   <div className="space-y-3">
-                    {githubData.recentActivity.length > 0 ? (
+                    {githubData.recentActivity && githubData.recentActivity.length > 0 ? (
                       githubData.recentActivity.slice(0, 5).map((event) => (
                         <div key={event.id} className="flex gap-3 items-start">
                           <div className="bg-slate-100 rounded-full p-1 mt-1">
@@ -421,7 +428,7 @@ const router = useRouter();
                 </div>
                 
                 {/* Contributions */}
-                {githubData.contributions.length > 0 && (
+                {githubData.contributions && githubData.contributions.length > 0 && (
                   <div>
                     <h4 className="text-md font-semibold mb-2">Recent Contributions</h4>
                     <div className="space-y-3">
@@ -438,7 +445,7 @@ const router = useRouter();
                 )}
                 
                 {/* Followers */}
-                {githubData.followers.length > 0 && (
+                {githubData.followers && githubData.followers.length > 0 && (
                   <div>
                     <h4 className="text-md font-semibold mb-2">Followers</h4>
                     <div className="flex flex-wrap gap-2">
@@ -446,6 +453,7 @@ const router = useRouter();
                         <a 
                           href={follower.html_url}
                           target="_blank"
+                          rel="noopener noreferrer"
                           key={follower.id}
                           className="hover:opacity-80"
                         >
