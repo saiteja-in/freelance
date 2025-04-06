@@ -19,6 +19,46 @@ interface ProductData {
     rank?: number;
   }
   
+  export const getUsersWithRatings = async () => {
+    const usersWithUpvoteCounts = await db.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        image: true,
+        bio: true,
+        location: true,
+        githubLink: true,
+        portfolioLink: true,
+        linkedinLink: true,
+        twitterLink: true,
+        websiteLink: true,
+        skills: true,
+        upvotes: true, // all upvotes on the user’s products
+        products: {
+          select: {
+            id: true,
+            upvotes: true,
+          },
+        },
+      },
+    });
+  
+    // Calculate total upvotes per user
+    const usersWithRatings = usersWithUpvoteCounts.map((user) => {
+      const totalUpvotes = user.products.reduce(
+        (acc, product) => acc + product.upvotes.length,
+        0
+      );
+  
+      return {
+        ...user,
+        rating: totalUpvotes,
+      };
+    });
+  
+    return usersWithRatings;
+  };
+  
   export const createProduct = async ({
     name,
     slug,
