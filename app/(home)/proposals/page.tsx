@@ -10,9 +10,17 @@ import { useRouter } from 'next/navigation';
 
 interface Applicant {
   id: string;
-  name: string;
+  name: string | null;
   email: string;
-  appliedAt: string;
+  image: string | null;
+  location: string | null;
+  experienceRange: string | null;
+  skills: string[];
+  bio: string | null;
+  portfolioLink: string | null;
+  githubLink: string | null;
+  linkedinLink: string | null;
+  resume: string | null;
 }
 
 interface Job {
@@ -27,7 +35,7 @@ interface Job {
   minSalary: number | null;
   maxSalary: number | null;
   currency: string;
-  expectedTime: string | null;
+  ExpectedTime: string | null;
   Applied: {
     id: string;
     status: string;
@@ -139,7 +147,7 @@ const EmployerProposals: React.FC = () => {
                     </p>
                     <p className="text-sm text-gray-600 dark:text-zinc-400">
                       <span className="font-medium">Expected Time: </span>
-                      {job.expectedTime ?? 'Not specified'}
+                      {job.ExpectedTime ?? 'Not specified'}
                     </p>
                   </div>
 
