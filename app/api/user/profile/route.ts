@@ -11,13 +11,11 @@ export async function GET() {
     const fullUser = await db.user.findUnique({
       where: { email: user.email },
       include: {
-        projects: true,
-        previousCompanies: true,
+        products: true,
         postedJobs: true,
         applications: true,
         bookmarks: true,
         upvotes: true,
-        products: true,
         comments: true,
       },
     });

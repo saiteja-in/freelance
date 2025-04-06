@@ -1,16 +1,36 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 
-const GITHUB_TOKEN = process.env.NEXT_PUBLIC_GITHUB_TOKEN; // Add this to your .env.local
+interface Commit {
+  sha: string;
+  commit: {
+    message: string;
+    author: {
+      name: string;
+      date: string;
+    };
+  };
+}
+
+interface Contributor {
+  id: number;
+  login: string;
+  html_url: string;
+  avatar_url: string;
+}
+
+const GITHUB_TOKEN = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
 
 function Progress() {
-  const [repoUrl, setRepoUrl] = useState("");
-  const [commits, setCommits] = useState([]);
-  const [contributors, setContributors] = useState([]);
-  const [error, setError] = useState("");
+  const [repoUrl, setRepoUrl] = useState(
+    "https://github.com/viswaprateek/MentorConnect"
+  );
+  const [commits, setCommits] = useState<Commit[]>([]);
+  const [contributors, setContributors] = useState<Contributor[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const parseRepo = (url: string) => {
     try {
@@ -20,11 +40,11 @@ function Progress() {
       if (!owner || !repo) throw new Error("Invalid repo URL");
       return { owner, repo };
     } catch {
-      throw new Error("Invalid repo URL");
+      throw new Error("Invalid GitHub URL");
     }
   };
 
-  const fetchRepoData = async () => {
+  const fetchData = useCallback(async () => {
     setError("");
     setCommits([]);
     setContributors([]);
@@ -32,8 +52,9 @@ function Progress() {
 
     try {
       const { owner, repo } = parseRepo(repoUrl);
+
       const headers = {
-        Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+        Authorization: `token ${GITHUB_TOKEN}`,
         Accept: "application/vnd.github+json",
       };
 
@@ -48,7 +69,7 @@ function Progress() {
       ]);
 
       if (!commitsRes.ok || !contributorsRes.ok) {
-        throw new Error("Error fetching data. Check token or repo name.");
+        throw new Error("Error fetching repo data");
       }
 
       const commitsData = await commitsRes.json();
@@ -61,22 +82,26 @@ function Progress() {
     } finally {
       setLoading(false);
     }
-  };
+  },[repoUrl]);
+
+  useEffect(() => {
+    fetchData(); // Auto-fetch when component loads with default repo
+  }, [fetchData]);
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="mb-4">
+    <div className="max-w-3xl mx-auto p-4">
+      <div className="mb-6">
         <input
           type="text"
-          placeholder="Enter GitHub repo URL (e.g. https://github.com/vercel/next.js)"
+          placeholder="GitHub Repo URL"
           value={repoUrl}
           onChange={(e) => setRepoUrl(e.target.value)}
           className="w-full p-2 border rounded bg-background text-foreground"
         />
         <button
-          onClick={fetchRepoData}
-          disabled={!repoUrl || loading}
-          className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+          onClick={fetchData}
+          className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          disabled={loading}
         >
           {loading ? "Fetching..." : "Track Progress"}
         </button>
@@ -86,17 +111,15 @@ function Progress() {
 
       {commits.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-xl font-bold mb-2">Latest Commits</h2>
-          <ul className="space-y-2">
-            {commits.map((commit: any) => (
-              <li key={commit.sha} className="p-2 border rounded bg-muted">
-                <div className="text-sm font-medium">
-                  {commit.commit.message}
-                </div>
-                <div className="text-xs text-muted-foreground">
+          <h2 className="text-xl font-semibold mb-2">Latest Commits</h2>
+          <ul className="space-y-3">
+            {commits.map((commit) => (
+              <li key={commit.sha} className="border p-3 rounded bg-muted">
+                <p className="font-medium">{commit.commit.message}</p>
+                <p className="text-sm text-muted-foreground">
                   {commit.commit.author.name} •{" "}
                   {new Date(commit.commit.author.date).toLocaleString()}
-                </div>
+                </p>
               </li>
             ))}
           </ul>
@@ -105,20 +128,18 @@ function Progress() {
 
       {contributors.length > 0 && (
         <div>
-          <h2 className="text-xl font-bold mb-2">
+          <h2 className="text-xl font-semibold mb-2">
             Contributors ({contributors.length})
           </h2>
-          <ul className="flex flex-wrap gap-4">
-            {contributors.map((contributor: any) => (
+          <ul className="flex flex-wrap gap-3">
+            {contributors.map((contributor) => (
               <li
                 key={contributor.id}
-                className="flex items-center gap-2 bg-muted p-2 rounded"
+                className="flex items-center gap-2 bg-muted px-3 py-2 rounded"
               >
                 <Image
-                  width={24}
-                  height={24}
-                  alt="avatar"
                   src={contributor.avatar_url}
+                  alt={contributor.login}
                   className="w-6 h-6 rounded-full"
                 />
                 <a

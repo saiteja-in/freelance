@@ -46,84 +46,84 @@ enum ApplicationAssignmentStatus {
 }
 
 model User {
-  id                String            @id @default(cuid())
-  name              String?
-  email             String            @unique
-  emailVerified     DateTime?
-  password          String?
-  image             String?           // User profile image/avatar
-  role              UserRole          @default(USER)
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-  
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  password      String?
+  image         String? // User profile image/avatar
+  role          UserRole  @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
   // Profile information
-  bio               String?
-  location          String?
-  
+  bio      String?
+  location String?
+
   // Social links
-  githubLink        String?
-  portfolioLink     String?
-  linkedinLink      String?
-  twitterLink       String?
-  websiteLink       String?
-  
+  githubLink    String?
+  portfolioLink String?
+  linkedinLink  String?
+  twitterLink   String?
+  websiteLink   String?
+
   // Skills & Experience
-  skills            String[]          @default([])
-  resume            String?           // URL to resume file
-  experienceRange   ExperienceRange?
-  
+  skills          String[]         @default([])
+  resume          String? // URL to resume file
+  experienceRange ExperienceRange?
+
   // Relations
   // projects          Project[] 
   // previousCompanies PreviousCompany[]
 
   // Jobs the user has posted (as employer)
-  postedJobs        Job[]             @relation("JobPoster")
-  
+  postedJobs Job[] @relation("JobPoster")
+
   // Jobs the user has applied to (as job seeker)
-  applications      JobApplication[]  @relation("JobApplicant")
-  
+  applications JobApplication[] @relation("JobApplicant")
+
   // Jobs the user has bookmarked
-  bookmarks         Bookmark[]
+  bookmarks Bookmark[]
 
   // Relation to Applied model (job seeker side)
-  jobSeekerApplications Applied[]     @relation("JobSeekerApplications")
+  jobSeekerApplications Applied[] @relation("JobSeekerApplications")
 
   // Relation to Applied model (employer side)
-  employerApplications Applied[]     @relation("EmployerApplications")
+  employerApplications Applied[] @relation("EmployerApplications")
 
   // Contracts (Freelancer and Client relations)
-  freelancerContracts Contract[]      @relation("FreelancerContracts")
-  clientContracts     Contract[]      @relation("ClientContracts")
+  freelancerContracts Contract[] @relation("FreelancerContracts")
+  clientContracts     Contract[] @relation("ClientContracts")
 
   // Other relations from the product showcase feature
-  upvotes           Upvote[]
-  products          Product[]
-  comments          Comment[]
-  accounts          Account[]
+  upvotes  Upvote[]
+  products Product[]
+  comments Comment[]
+  accounts Account[]
 }
 
 model Contract {
-  id            String   @id @default(uuid())
-  freelancerId  String   // Job Seeker (Freelancer) ID
-  clientId      String   // Employer (Client) ID
-  bidId         String   // Reference to the Applied model (bidId)
-  jobId         String   // Job ID
+  id           String @id @default(uuid())
+  freelancerId String // Job Seeker (Freelancer) ID
+  clientId     String // Employer (Client) ID
+  bidId        String // Reference to the Applied model (bidId)
+  jobId        String // Job ID
 
-  freelancer    User     @relation("FreelancerContracts", fields: [freelancerId], references: [id])
-  client        User     @relation("ClientContracts", fields: [clientId], references: [id])
+  freelancer User @relation("FreelancerContracts", fields: [freelancerId], references: [id])
+  client     User @relation("ClientContracts", fields: [clientId], references: [id])
 
-  job           Job      @relation(fields: [jobId], references: [id])
-  bid           Applied  @relation(fields: [bidId], references: [id])
+  job Job     @relation(fields: [jobId], references: [id])
+  bid Applied @relation(fields: [bidId], references: [id])
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   Job Job[] @relation("JobContracts")
 }
 
 model Job {
-  id                 String           @id @unique @default(cuid())
-  posterId           String           // User who posted this job
+  id                 String    @id @unique @default(cuid())
+  posterId           String // User who posted this job
   title              String
   companyName        String
   companyLogo        String?
@@ -133,78 +133,78 @@ model Job {
   jobType            JobType
   minExperience      Int
   maxExperience      Int
-  description        String           @db.Text
+  description        String    @db.Text
   skillsRequired     String[]
   minSalary          Int?
   maxSalary          Int?
-  currency           Currency         @default(INR)
+  currency           Currency  @default(INR)
   location           String?
-  isRemote           Boolean          @default(false)
-  isVerified         Boolean          @default(false)
-  postedAt           DateTime         @default(now())
-  applicationLink    String?          // External application link if any
-  applicationEmail   String?          // Email for applications if any
+  isRemote           Boolean   @default(false)
+  isVerified         Boolean   @default(false)
+  postedAt           DateTime  @default(now())
+  applicationLink    String? // External application link if any
+  applicationEmail   String? // Email for applications if any
   expiresAt          DateTime?
-  updatedAt          DateTime         @updatedAt
-  
+  updatedAt          DateTime  @updatedAt
+
   // Relations
-  poster             User             @relation("JobPoster", fields: [posterId], references: [id], onDelete: Cascade)
-  applications       JobApplication[] @relation("JobApplications")
-  bookmarks          Bookmark[]
-  Applied            Applied[]
-  
+  poster       User             @relation("JobPoster", fields: [posterId], references: [id], onDelete: Cascade)
+  applications JobApplication[] @relation("JobApplications")
+  bookmarks    Bookmark[]
+  Applied      Applied[]
+
   // Add the reverse relation field for Contract
-  contracts          Contract[]        @relation("JobContracts")
+  contracts Contract[] @relation("JobContracts")
 
   Contract Contract[]
 }
 
 model Applied {
-  id            String                     @id @default(uuid())
-  jobSeekerId   String                     // Reference to User (job seeker)
-  jobId         String                     // Reference to Job
+  id            String                      @id @default(uuid())
+  jobSeekerId   String // Reference to User (job seeker)
+  jobId         String // Reference to Job
   employerId    String
   ProposedPrice Int?
   ProposedDate  DateTime?
   Message       String?
   status        ApplicationAssignmentStatus @default(PENDING)
 
-  job           Job      @relation(fields: [jobId], references: [id])
-  employer      User     @relation("EmployerApplications", fields: [employerId], references: [id])
-  jobSeeker     User     @relation("JobSeekerApplications", fields: [jobSeekerId], references: [id])
+  job       Job        @relation(fields: [jobId], references: [id])
+  employer  User       @relation("EmployerApplications", fields: [employerId], references: [id])
+  jobSeeker User       @relation("JobSeekerApplications", fields: [jobSeekerId], references: [id])
+  Contract  Contract[]
 
   @@unique([jobSeekerId, jobId])
-  Contract Contract[]
 }
 
 model JobApplication {
   id          String            @id @default(cuid())
   jobId       String
-  applicantId String            // User who applied to the job
+  applicantId String // User who applied to the job
   status      ApplicationStatus @default(PENDING)
   coverLetter String?           @db.Text
-  resumeUrl   String?           // URL to the resume for this specific application
+  resumeUrl   String? // URL to the resume for this specific application
   appliedAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
-  notes       String?           @db.Text  // Notes from the job poster
-  
-  job         Job               @relation("JobApplications", fields: [jobId], references: [id], onDelete: Cascade)
-  applicant   User              @relation("JobApplicant", fields: [applicantId], references: [id], onDelete: Cascade)
-  
+  notes       String?           @db.Text // Notes from the job poster
+
+  job       Job  @relation("JobApplications", fields: [jobId], references: [id], onDelete: Cascade)
+  applicant User @relation("JobApplicant", fields: [applicantId], references: [id], onDelete: Cascade)
+
   @@unique([applicantId, jobId])
   @@index([applicantId])
   @@index([jobId])
 }
 
 model Bookmark {
-  id          String   @id @default(cuid())
-  jobId       String
-  userId      String
-  createdAt   DateTime @default(now())
-  
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  
+  id        String   @id @default(cuid())
+  jobId     String
+  userId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
   @@unique([userId, jobId])
   @@index([userId])
   @@index([jobId])
@@ -243,7 +243,7 @@ model Image {
   id        String   @id @default(cuid())
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  url       String  
+  url       String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -261,15 +261,15 @@ model Upvote {
 }
 
 model Comment {
-  id             String    @id @default(cuid())
+  id             String   @id @default(cuid())
   profilePicture String
   productId      String
-  product        Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   userId         String
-  user           User      @relation(fields: [userId], references: [id])
+  user           User     @relation(fields: [userId], references: [id])
   body           String
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model Account {
@@ -293,18 +293,31 @@ model Account {
 }
 
 model VerificationToken {
-  id String @id @default(cuid())
-  email String
-  token String @unique
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
   expires DateTime
 
   @@unique([email, token])
 }
+
 model PasswordResetToken {
-  id String @id @default(cuid())
-  email String
-  token String @unique
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
   expires DateTime
 
   @@unique([email, token])
+}
+
+model Payment {
+  id        String  @id @default(cuid())
+  name      String
+  to_user   String
+  oid       String
+  message   String
+  amount    Int
+  createdAt String
+  updatedAt String
+  done      Boolean
 }

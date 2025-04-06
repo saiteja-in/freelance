@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { FeaturedJobs } from "@/components/featured-jobs"
 import { PopularCategories } from "@/components/popular-categories"
 import { TalentShowcase } from "@/components/talent-showcase"
+import AISearch from "./_components/AISearch";
 
 const Home = async () => {
   const user = (await currentUser()) as ExtendedUser;
@@ -41,17 +42,7 @@ const Home = async () => {
                 Find your next gig or hire exceptional talent. One platform, endless possibilities.
               </p>
               <div className="w-full max-w-2xl relative mt-6">
-                <div className="relative flex items-center">
-                  <Search className="absolute left-3 h-5 w-5 text-white/50" />
-                  <Input
-                    className="w-full bg-white/10 border-0 pl-10 pr-20 py-6 text-white placeholder:text-white/50 focus-visible:ring-2 focus-visible:ring-white/20"
-                    placeholder="Search for jobs, talent, or skills..."
-                    type="search"
-                  />
-                  <Button className="absolute right-1.5 bg-white text-violet-600 hover:bg-white/90 hover:text-violet-700">
-                    Search
-                  </Button>
-                </div>
+                <AISearch />
                 <div className="mt-3 flex flex-wrap justify-center gap-2 text-sm text-white/70">
                   <span>Popular:</span>
                   <Link href="#" className="hover:text-white transition-colors">
