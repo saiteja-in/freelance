@@ -11,8 +11,6 @@ export async function GET() {
     const fullUser = await db.user.findUnique({
       where: { email: user.email },
       include: {
-        projects: true,
-        previousCompanies: true,
         postedJobs: true,
         applications: true,
         bookmarks: true,
