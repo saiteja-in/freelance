@@ -24,8 +24,8 @@ export default async function layout({
 }: { children: React.ReactNode })
 {
   return (
-	<div className='min-h-screen flex flex-col'>
-		<nav className="container py-4 px-10 flex justify-between ">
+	<div className=''>
+		{/* <nav className="container py-4 px-10 flex justify-between ">
         <Link 
           className={cn(
             buttonVariants({ variant: "outline" }),
@@ -41,7 +41,7 @@ export default async function layout({
         <div className="container flex items-center justify-center">
           {children}
         </div>
-      </main>
+      </main> */}
 	</div>
   )
 }

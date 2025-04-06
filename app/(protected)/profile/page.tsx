@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import Link from 'next/link';
+import { useRouter } from 'nextjs-toploader/app';
 
 interface User {
   name: string | null;
@@ -65,7 +67,7 @@ export default function ProfilePage() {
   const [githubData, setGithubData] = useState<GitHubData | null>(null);
   const [githubLoading, setGithubLoading] = useState(false);
   const [githubError, setGithubError] = useState("");
-
+const router = useRouter();
   useEffect(() => {
     fetch('/api/user/profile')
       .then((res) => res.json())
@@ -201,6 +203,15 @@ export default function ProfilePage() {
             />
           </div>
         </CardContent>
+        <Button
+          type="submit"
+          className="mt-4 w-full"
+          onClick={()=>{
+            router.push('/resume-analysis')
+          }}
+        >
+          Extract Resume Data
+        </Button>
       </Card>
 
       {/* Bio */}
