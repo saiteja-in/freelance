@@ -43,7 +43,9 @@ const SettingsPanelProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Helper to toggle the sidebar.
   const togglePanel = React.useCallback(() => {
-    return isMobile && setOpenMobile((open) => !open);
+    if (isMobile) {
+      setOpenMobile((open) => !open);
+    }
   }, [isMobile, setOpenMobile]);
 
   const contextValue = React.useMemo<SettingsPanelContext>(
