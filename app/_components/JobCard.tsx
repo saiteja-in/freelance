@@ -48,7 +48,9 @@ export default function JobCard({ job }: Props) {
     >
       <Card 
         onClick={navigateToJobDetails}
-        className="group flex w-full cursor-pointer flex-col border border-zinc-800 bg-zinc-950 shadow-md transition-all hover:border-pink-500/50 hover:shadow-pink-500/10"
+        className="group flex w-full cursor-pointer flex-col border dark:border-zinc-800 border-zinc-200 
+                 bg-white dark:bg-zinc-950 shadow-md transition-all 
+                 hover:border-pink-500/50 hover:shadow-pink-500/10"
       >
         <CardHeader className="p-4 pb-2">
           <div className="flex w-full items-center justify-between">
@@ -70,10 +72,10 @@ export default function JobCard({ job }: Props) {
               )}
               
               <div className="flex flex-col">
-                <h3 className="text-base font-medium text-white group-hover:text-pink-400">
+                <h3 className="text-base font-medium text-zinc-900 dark:text-white group-hover:text-pink-600 dark:group-hover:text-pink-400">
                   {job.title}
                 </h3>
-                <p className="text-xs text-zinc-400">{job.companyName}</p>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400">{job.companyName}</p>
               </div>
             </div>
             
@@ -88,7 +90,7 @@ export default function JobCard({ job }: Props) {
                       onClick={(e) => handleBookmark(e)}
                     >
                       <Bookmark 
-                        className={`h-4 w-4 ${isBookmarked ? 'fill-pink-500 text-pink-500' : 'text-zinc-400'}`} 
+                        className={`h-4 w-4 ${isBookmarked ? 'fill-pink-500 text-pink-500' : 'text-zinc-600 dark:text-zinc-400'}`} 
                       />
                       <span className="sr-only">Bookmark</span>
                     </Button>
@@ -104,21 +106,25 @@ export default function JobCard({ job }: Props) {
         
         <CardContent className="p-4 pt-2">
           <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
-            <Badge variant="outline" className="flex items-center gap-1 border-zinc-700 bg-zinc-900 font-normal text-zinc-300">
+            <Badge variant="outline" className="flex items-center gap-1 border-zinc-200 dark:border-zinc-700 
+                                             bg-zinc-100 dark:bg-zinc-900 font-normal text-zinc-700 dark:text-zinc-300">
               <CalendarDays className="h-3 w-3 text-pink-500" />
               Posted {new Date(job.postedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </Badge>
             
-            <Badge variant="outline" className="border-zinc-700 bg-zinc-900 font-normal text-zinc-300">
+            <Badge variant="outline" className="border-zinc-200 dark:border-zinc-700 
+                                            bg-zinc-100 dark:bg-zinc-900 font-normal text-zinc-700 dark:text-zinc-300">
               {job.jobType}
             </Badge>
             
-            <Badge variant="outline" className="flex items-center gap-1 border-zinc-700 bg-zinc-900 font-normal text-zinc-300">
+            <Badge variant="outline" className="flex items-center gap-1 border-zinc-200 dark:border-zinc-700 
+                                             bg-zinc-100 dark:bg-zinc-900 font-normal text-zinc-700 dark:text-zinc-300">
               <MapPin className="h-3 w-3 text-pink-500" />
               Remote
             </Badge>
             
-            <Badge variant="outline" className="flex items-center gap-1 border-zinc-700 bg-zinc-900 font-normal text-zinc-300">
+            <Badge variant="outline" className="flex items-center gap-1 border-zinc-200 dark:border-zinc-700 
+                                             bg-zinc-100 dark:bg-zinc-900 font-normal text-zinc-700 dark:text-zinc-300">
               {job.currency === 'INR' ? (
                 <IndianRupee className="h-3 w-3 text-pink-500" />
               ) : (
@@ -127,7 +133,8 @@ export default function JobCard({ job }: Props) {
               {job.minSalary ? `${job.minSalary / 1000}k` : ''}{job.maxSalary ? `-${job.maxSalary / 1000}k` : ''}
             </Badge>
             
-            <Badge variant="outline" className="flex items-center gap-1 border-zinc-700 bg-zinc-900 font-normal text-zinc-300">
+            <Badge variant="outline" className="flex items-center gap-1 border-zinc-200 dark:border-zinc-700 
+                                             bg-zinc-100 dark:bg-zinc-900 font-normal text-zinc-700 dark:text-zinc-300">
               <Briefcase className="h-3 w-3 text-pink-500" />
               {`${job.minExperience}-${job.maxExperience}`} YOE
             </Badge>
@@ -138,7 +145,7 @@ export default function JobCard({ job }: Props) {
           {job.skillsRequired.map((skill, i) => (
             <Badge 
               key={i} 
-              className="bg-pink-500/10 text-pink-400 hover:bg-pink-500/20"
+              className="bg-pink-500/10 text-pink-600 dark:text-pink-400 hover:bg-pink-500/20"
             >
               {skill}
             </Badge>
