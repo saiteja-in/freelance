@@ -833,3 +833,24 @@ export const getJobSeekerCards = async () => {
     }
   };
   
+
+  export const getContractParties = async () => {
+    try {
+      // Fetch the first contract with freelancerId and clientId
+      const contract = await db.contract.findFirst({
+        select: {
+          freelancerId: true,
+          clientId: true,
+        },
+      });
+  
+      if (!contract) {
+        throw new Error("No contract found");
+      }
+  
+      return contract;
+    } catch (error) {
+      console.error("Error fetching contract parties:", error);
+      throw new Error("Failed to fetch contract parties");
+    }
+  };
