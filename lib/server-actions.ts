@@ -372,15 +372,39 @@ interface ProductData {
   export const getJobs = async (
     page: number,
     limit: number,
-    searchQuery?: string,
-    commitmentTypes?: string[],
-    experienceTypes?: string[],
-    payTypes?: string[],
+    searchQuery: string="",
+    commitmentTypes: string[]=[],
+    experienceTypes: string[]=[],
+    payTypes: string[]=[],
+    skills: string=""
   ) => {
+    console.log({
+      page,
+      limit,
+      searchQuery,
+      commitmentTypes,
+      experienceTypes,
+      payTypes,
+      skills
+    })
     try {
       const skipRecords = (page - 1) * limit;
+
+      if(skills==="" && commitmentTypes.length === 0 && experienceTypes.length === 0 && payTypes.length === 0 && searchQuery==="") {
+        const jobs = await db.job.findMany({
+          take: limit,
+        })
+
+        const cnt = await db.job.count();
+
+        return {
+          success: true,
+          jobs,
+          hasMore: limit < cnt,
+        }
+      }
   
-      const expRanges = experienceTypes?.map((exp) => {
+      const expRanges = experienceTypes.map((exp) => {
         if (exp.includes('+')) {
           const minExp = parseInt(exp.replace('+', '').trim());
           return { min: minExp, max: 100 };
@@ -403,6 +427,8 @@ interface ProductData {
   
         return { min, max };
       });
+
+      const skillsArray = skills?.split(',').map((skill) => skill.trim().toLowerCase()) ?? [];
   
       const [jobs, totalCount] = await Promise.all([
         db.job.findMany({
@@ -412,6 +438,13 @@ interface ProductData {
               {
                 ...(searchQuery
                   ? { title: { contains: searchQuery, mode: 'insensitive' } }
+                  : {}),
+              },
+              {
+                ...(skillsArray.length > 0
+                  ? {
+                      skillsRequired: { hasSome: skillsArray },
+                    }
                   : {}),
               },
               {
@@ -444,7 +477,7 @@ interface ProductData {
                       })),
                     }
                   : {}),
-              },
+              }
             ],
           },
           skip: skipRecords,

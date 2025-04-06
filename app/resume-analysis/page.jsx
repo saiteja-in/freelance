@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import ResumeAnalysisLoading from "@/components/resume-analysis/ResumeAnalysisLoading";
 import ResumeUpload from "@/components/resume-analysis/ResumeUpload";
 import { redirect, useRouter } from "next/navigation";
 import { currentUser } from "@/lib/auth";
