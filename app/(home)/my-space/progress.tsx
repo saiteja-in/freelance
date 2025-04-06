@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -67,11 +67,11 @@ function Progress() {
       if (!owner || !repo) throw new Error("Invalid repo URL");
       return { owner, repo };
     } catch {
-      throw new Error("Invalid repo URL");
+      throw new Error("Invalid GitHub URL");
     }
   };
 
-  const fetchRepoData = async () => {
+  const fetchData = useCallback(async () => {
     setError("");
     setCommits([]);
     setContributors([]);
@@ -128,7 +128,11 @@ function Progress() {
     } finally {
       setLoading(false);
     }
-  };
+  },[repoUrl]);
+
+  useEffect(() => {
+    fetchData(); // Auto-fetch when component loads with default repo
+  }, [fetchData]);
 
   // Function to format commit message to truncate if too long
   const formatCommitMessage = (message: string) => {
@@ -173,15 +177,15 @@ function Progress() {
       <div className="mb-6">
         <input
           type="text"
-          placeholder="Enter GitHub repo URL (e.g. https://github.com/vercel/next.js)"
+          placeholder="GitHub Repo URL"
           value={repoUrl}
           onChange={(e) => setRepoUrl(e.target.value)}
           className="w-full p-2 border rounded bg-background text-foreground"
         />
         <button
-          onClick={fetchRepoData}
-          disabled={!repoUrl || loading}
-          className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+          onClick={fetchData}
+          className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          disabled={loading}
         >
           {loading ? "Fetching..." : "Track Progress"}
         </button>

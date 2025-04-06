@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import {
   ArrowLeft,
   Briefcase,
@@ -9,19 +9,27 @@ import {
   MapPin,
   BookmarkIcon,
   ExternalLink,
-} from 'lucide-react';
-import Image from 'next/image';
-import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { Job } from '@prisma/client';
-import { useSession } from 'next-auth/react';
-import { Spinner } from '@/components/ui/spinner';
-import { applyJob, getJobDetails } from '@/lib/server-actions';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'; // adjust import as per your project
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { ApplyJobSchema, ApplyJobSchemaType } from '@/app/_components/jobschema.validator';
+} from "lucide-react";
+import Image from "next/image";
+import { useParams, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Job } from "@prisma/client";
+import { useSession } from "next-auth/react";
+import { Spinner } from "@/components/ui/spinner";
+import { applyJob, getJobDetails } from "@/lib/server-actions";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"; // adjust import as per your project
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  ApplyJobSchema,
+  ApplyJobSchemaType,
+} from "@/app/_components/jobschema.validator";
 
 export default function Page() {
   const [jobDetails, setJobDetails] = useState<Job | null>(null);
@@ -34,7 +42,7 @@ export default function Page() {
   const params = useParams();
   const { id } = params;
 
-  const fetchJobInfo = async () => {
+  const fetchJobInfo = useCallback(async () => {
     try {
       setLoading(true);
       const { job, success, error } = await getJobDetails(id as string);
@@ -47,10 +55,10 @@ export default function Page() {
       }
     } catch (error) {
       setLoading(false);
-      console.error('Error fetching job details : ', error);
-      toast.error('Something went wrong while fetching job details');
+      console.error("Error fetching job details : ", error);
+      toast.error("Something went wrong while fetching job details");
     }
-  };
+  }, [id]);
 
   // Set up react-hook-form for the Apply dialog
   const {
@@ -73,23 +81,23 @@ export default function Page() {
         Message
       );
       if (!success) {
-        toast.error(error || 'Failed to apply for this job');
+        toast.error(error || "Failed to apply for this job");
         return;
       }
-      toast.success('Successfully applied for this job!');
+      toast.success("Successfully applied for this job!");
       setOpenDialog(false);
       reset();
       // Redirect after applying (using the job's application link if available)
-      router.push('/');
+      router.push("/");
     } catch (error) {
-      console.error('Error applying: ', error);
-      toast.error('Something went wrong while applying');
+      console.error("Error applying: ", error);
+      toast.error("Something went wrong while applying");
     }
   };
 
   const toggleBookmark = () => {
     setBookmarked(!bookmarked);
-    toast.success(bookmarked ? 'Removed from bookmarks' : 'Added to bookmarks');
+    toast.success(bookmarked ? "Removed from bookmarks" : "Added to bookmarks");
     // Implement actual bookmark logic here if needed
   };
 
@@ -97,14 +105,14 @@ export default function Page() {
     if (id) {
       fetchJobInfo();
     }
-  }, [id]);
+  }, [id, fetchJobInfo]);
 
   if (!id) {
     router.back();
     return null;
   }
 
-  if (loading || status === 'loading') {
+  if (loading || status === "loading") {
     return (
       <div className="flex h-[90vh] w-full flex-col items-center justify-center p-10 text-zinc-800 dark:text-zinc-100">
         <Spinner className="h-10 w-10 text-pink-600" />
@@ -171,12 +179,15 @@ export default function Page() {
                   <div className="flex items-center text-sm text-zinc-500 dark:text-zinc-400 mt-2">
                     <Calendar className="h-4 w-4 mr-1.5 text-pink-600 dark:text-pink-500" />
                     <p>
-                      Posted on{' '}
-                      {new Date(jobDetails.postedAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
+                      Posted on{" "}
+                      {new Date(jobDetails.postedAt).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )}
                     </p>
                   </div>
                 </div>
@@ -193,12 +204,17 @@ export default function Page() {
                   onClick={toggleBookmark}
                   className={`h-10 w-10 rounded-md flex items-center justify-center transition-colors ${
                     bookmarked
-                      ? 'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400'
-                      : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 hover:text-pink-600 dark:hover:text-pink-400'
+                      ? "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400"
+                      : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 hover:text-pink-600 dark:hover:text-pink-400"
                   }`}
-                  aria-label={bookmarked ? 'Remove from bookmarks' : 'Add to bookmarks'}
+                  aria-label={
+                    bookmarked ? "Remove from bookmarks" : "Add to bookmarks"
+                  }
                 >
-                  <BookmarkIcon className="h-5 w-5" fill={bookmarked ? 'currentColor' : 'none'} />
+                  <BookmarkIcon
+                    className="h-5 w-5"
+                    fill={bookmarked ? "currentColor" : "none"}
+                  />
                 </button>
               </div>
             </div>
@@ -231,7 +247,8 @@ export default function Page() {
                 </span>
                 <span className="mt-1 font-medium text-zinc-900 dark:text-white flex items-center">
                   <Briefcase className="h-4 w-4 text-pink-600 dark:text-pink-500 mr-2" />
-                  {`${jobDetails.minExperience}-${jobDetails.maxExperience}`} YOE
+                  {`${jobDetails.minExperience}-${jobDetails.maxExperience}`}{" "}
+                  YOE
                 </span>
               </div>
               <div className="flex flex-col">
@@ -239,12 +256,13 @@ export default function Page() {
                   Salary
                 </span>
                 <span className="mt-1 font-medium text-zinc-900 dark:text-white flex items-center">
-                  {jobDetails.currency === 'INR' ? (
+                  {jobDetails.currency === "INR" ? (
                     <IndianRupee className="h-4 w-4 text-pink-600 dark:text-pink-500 mr-2" />
                   ) : (
                     <DollarSign className="h-4 w-4 text-pink-600 dark:text-pink-500 mr-2" />
                   )}
-                  {(jobDetails.minSalary as number) / 1000}k-{(jobDetails.maxSalary as number) / 1000}k
+                  {(jobDetails.minSalary as number) / 1000}k-
+                  {(jobDetails.maxSalary as number) / 1000}k
                 </span>
               </div>
             </div>
@@ -313,7 +331,9 @@ export default function Page() {
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
         <DialogContent className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800">
           <DialogHeader>
-            <DialogTitle className="text-zinc-900 dark:text-white">Apply for this Job</DialogTitle>
+            <DialogTitle className="text-zinc-900 dark:text-white">
+              Apply for this Job
+            </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit(handleApplySubmit)}>
             <div className="mb-4">
@@ -322,11 +342,13 @@ export default function Page() {
               </label>
               <input
                 type="number"
-                {...register('ProposedPrice', { valueAsNumber: true })}
+                {...register("ProposedPrice", { valueAsNumber: true })}
                 className="mt-1 w-full p-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:ring-pink-500 dark:focus:ring-pink-400 focus:border-pink-500 dark:focus:border-pink-400"
               />
               {errors.ProposedPrice && (
-                <p className="text-sm text-red-500 dark:text-red-400">{errors.ProposedPrice.message}</p>
+                <p className="text-sm text-red-500 dark:text-red-400">
+                  {errors.ProposedPrice.message}
+                </p>
               )}
             </div>
             <div className="mb-4">
@@ -335,11 +357,13 @@ export default function Page() {
               </label>
               <input
                 type="date"
-                {...register('ProposedDate')}
+                {...register("ProposedDate")}
                 className="mt-1 w-full p-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:ring-pink-500 dark:focus:ring-pink-400 focus:border-pink-500 dark:focus:border-pink-400"
               />
               {errors.ProposedDate && (
-                <p className="text-sm text-red-500 dark:text-red-400">{errors.ProposedDate.message}</p>
+                <p className="text-sm text-red-500 dark:text-red-400">
+                  {errors.ProposedDate.message}
+                </p>
               )}
             </div>
             <div className="mb-4">
@@ -347,12 +371,14 @@ export default function Page() {
                 Message
               </label>
               <textarea
-                {...register('Message')}
+                {...register("Message")}
                 className="mt-1 w-full p-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:ring-pink-500 dark:focus:ring-pink-400 focus:border-pink-500 dark:focus:border-pink-400"
                 rows={4}
               />
               {errors.Message && (
-                <p className="text-sm text-red-500 dark:text-red-400">{errors.Message.message}</p>
+                <p className="text-sm text-red-500 dark:text-red-400">
+                  {errors.Message.message}
+                </p>
               )}
             </div>
             <div className="flex justify-end gap-2">
@@ -363,8 +389,8 @@ export default function Page() {
               >
                 Cancel
               </button>
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="px-4 py-2 bg-pink-600 dark:bg-pink-500 text-white rounded-md hover:bg-pink-700 dark:hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-500 dark:focus:ring-pink-400 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 transition-colors"
               >
                 Apply
