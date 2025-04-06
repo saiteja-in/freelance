@@ -29,7 +29,8 @@ Return a JSON object in the following **exact structure**:
   "rating": {{ "min": <floating number>, "max": <number> }},
   "experience": {{ "min": <number>, "max": <number> }},
   "languages_known": [<string>, ...] or null,
-  "skills": [<string>, ...] or null
+  "skills": [<string>, ...] or null,
+  "commitment":   "PART_TIME" | "FULL_TIME" | "FREELANCE" | "INTERNSHIP"
 }}
 
 ### Rules:
@@ -49,7 +50,8 @@ Return a JSON object in the following **exact structure**:
   "rating": null,
   "experience": null,
   "languages_known": null,
-  "skills": null
+  "skills": null,
+  "commitment": null
 }}
 
 ## IMPORTANT: Output must be valid JSON and contain nothing else.
@@ -108,12 +110,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Check for commitment keywords in the client input
-    // const commitment = commitmentFilterItems.find((item) =>
-    //   searchPrompt.toUpperCase().includes(item)
-    // );
-    // if (commitment) {
-    //   params.append("commitment", commitment);
-    // }
+    if (parsedData.commitment) {
+      params.append("commitment", parsedData.commitment);
+    }
 
     const url = `http://localhost:3000/find-jobs?${params.toString()}`;
 

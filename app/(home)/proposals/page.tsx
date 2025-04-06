@@ -44,7 +44,7 @@ interface Job {
 }
 
 const EmployerProposals: React.FC = () => {
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
 
@@ -74,7 +74,7 @@ const EmployerProposals: React.FC = () => {
       setJobs((prevJobs) =>
         prevJobs.map((job) => ({
           ...job,
-          Applied: job.Applied.map((application) =>
+          Applied: job.Applied.map((application:any) =>
             application.id === appliedId
               ? { ...application, status: 'ACCEPTED' }
               : application
@@ -159,7 +159,7 @@ const EmployerProposals: React.FC = () => {
 
                 <CardFooter className="flex flex-col">
                   <div className="w-full space-y-4">
-                    {job.Applied.map((application) => (
+                    {job.Applied.map((application:any) => (
                       <div
                         key={application.id}
                         className="flex justify-between items-center p-3 border-b dark:border-zinc-800"
