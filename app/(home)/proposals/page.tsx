@@ -6,7 +6,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { useRouter } from 'next/navigation';
 
 interface Applicant {
   id: string;
@@ -38,12 +38,18 @@ interface Job {
 const EmployerProposals: React.FC = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchJobs = async () => {
       try {
         const jobData = await getEmployerJobApplications();
-        setJobs(jobData);
+        setJobs(
+          jobData.map((job: any) => ({
+            ...job,
+            expectedTime: job.ExpectedTime, // Map ExpectedTime to expectedTime
+          }))
+        );
       } catch (error) {
         console.error('Error fetching job data:', error);
       } finally {
@@ -70,6 +76,15 @@ const EmployerProposals: React.FC = () => {
     } catch (error) {
       console.error('Error assigning applicant:', error);
     }
+  };
+
+  const navigateToMySpace = () => {
+    router.push('/my-space');
+  };
+
+  // Check if job has any accepted applications
+  const hasAcceptedApplications = (job: Job): boolean => {
+    return job.Applied.some(application => application.status === 'ACCEPTED');
   };
 
   if (loading) {
@@ -134,8 +149,8 @@ const EmployerProposals: React.FC = () => {
                   </div>
                 </CardContent>
 
-                <CardFooter>
-                  <div className="space-y-4">
+                <CardFooter className="flex flex-col">
+                  <div className="w-full space-y-4">
                     {job.Applied.map((application) => (
                       <div
                         key={application.id}
@@ -165,11 +180,17 @@ const EmployerProposals: React.FC = () => {
                       </div>
                     ))}
                   </div>
+                  
+                  {/* Only show "View Job Details" button if there are accepted applications */}
+                  {hasAcceptedApplications(job) && (
+                    <Button 
+                      onClick={navigateToMySpace} 
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-4"
+                    >
+                      View Job Details
+                    </Button>
+                  )}
                 </CardFooter>
-
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-4">
-                  View Job Details
-                </Button>
               </Card>
             </motion.div>
           ))}
