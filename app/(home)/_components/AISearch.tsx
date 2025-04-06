@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import {
-  BadgeCheck,
-  Briefcase,
   Calendar,
   Clock,
   DollarSign,
@@ -11,8 +9,6 @@ import {
   Router,
   Search,
   Star,
-  Timer,
-  UserCog,
 } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
@@ -62,6 +58,9 @@ export default function AISearch() {
         console.log(response.data.url);
         toast.success("Found matching freelancers");
         router.push(response.data.url);
+        // router.push(
+        //   "/find-jobs?exp=0-1+YOE&exp=3-6+YOE&pay=0-10&pay=100%2B&commitment=INTERNSHIP"
+        // );
       } else {
         const response = await axios.post("/api/personalized/jobs", {
           searchPrompt: prompt,
@@ -76,8 +75,10 @@ export default function AISearch() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-6 rounded-xl">
-      <div className=" backdrop-blur-md rounded-xl p-8 shadow-2xl text-white">
+    <div className="w-full max-w-3xl mx-auto p-6 rounded-xl">
+      <div className="relative backdrop-blur-md rounded-xl p-8 shadow-2xl">
+        {/* Background gradient - different for light/dark modes */}
+        <div className="absolute inset-0 -z-10 h-full w-full rounded-xl bg-background [background:radial-gradient(125%_125%_at_50%_10%,#c7d2fe_20%,#4338ca_100%)] dark:[background:radial-gradient(125%_125%_at_50%_10%,#1a1b1e_40%,#4338ca_100%)]" />
 
         {/* Toggle Bar */}
         <div className="relative flex rounded-full p-1 mb-6 bg-white/10 dark:bg-slate-800/50 overflow-hidden backdrop-blur-sm">
@@ -91,7 +92,9 @@ export default function AISearch() {
             ref={findRef}
             onClick={() => setActiveTab("find")}
             className={`relative z-10 flex-1 py-2 text-center font-medium text-sm rounded-full transition-colors ${
-              activeTab === "find" ? "text-blue-600" : "text-black"
+              activeTab === "find" 
+                ? "text-primary dark:text-primary-foreground" 
+                : "text-foreground/70 dark:text-slate-400"
             }`}
           >
             Find talent
@@ -100,7 +103,9 @@ export default function AISearch() {
             ref={browseRef}
             onClick={() => setActiveTab("browse")}
             className={`relative z-10 flex-1 py-2 text-center font-medium text-sm rounded-full transition-colors ${
-              activeTab === "browse" ? "text-blue-600" : "text-black"
+              activeTab === "browse" 
+                ? "text-primary dark:text-primary-foreground" 
+                : "text-foreground/70 dark:text-slate-400"
             }`}
           >
             Browse jobs
@@ -114,7 +119,7 @@ export default function AISearch() {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="Search by role, skills, or keywords"
-            className="w-full py-3 px-4 pe-32 pr-16 bg-white text-blue-800 rounded-full focus:outline-none shadow-lg transition duration-200 ease-in-out focus:scale-105"
+            className="w-full py-3 px-4 pr-16 bg-card dark:bg-slate-800 text-foreground dark:text-slate-100 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-lg transition duration-200 ease-in-out focus:scale-105"
           />
           <motion.button
             onClick={getResponse}
@@ -134,23 +139,21 @@ export default function AISearch() {
 
         {/* Filters */}
         <div className="flex flex-wrap gap-2">
-          <div className="flex flex-wrap gap-2">
-            <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer py-2 px-3">
-              <Filter className="mr-1 h-4 w-4" /> Advanced Filters
-            </Badge>
-            <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer py-2 px-3">
-              <DollarSign className="mr-1 h-4 w-4" /> Budget
-            </Badge>
-            <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer py-2 px-3">
-              <BadgeCheck className="mr-1 h-4 w-4" /> Skills
-            </Badge>
-            <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer py-2 px-3">
-              <Briefcase className="mr-1 h-4 w-4" /> Experience
-            </Badge>
-            <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer py-2 px-3">
-              <UserCog className="mr-1 h-4 w-4" /> Commitment
-            </Badge>
-          </div>
+          <Badge className="bg-muted hover:bg-muted/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-foreground dark:text-slate-200 cursor-pointer py-2 px-3">
+            <Filter className="mr-1 h-4 w-4" /> Advanced Filters
+          </Badge>
+          <Badge className="bg-muted hover:bg-muted/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-foreground dark:text-slate-200 cursor-pointer py-2 px-3">
+            <Star className="mr-1 h-4 w-4" /> Company Rating
+          </Badge>
+          <Badge className="bg-muted hover:bg-muted/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-foreground dark:text-slate-200 cursor-pointer py-2 px-3">
+            <DollarSign className="mr-1 h-4 w-4" /> Payment Range
+          </Badge>
+          <Badge className="bg-muted hover:bg-muted/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-foreground dark:text-slate-200 cursor-pointer py-2 px-3">
+            <Clock className="mr-1 h-4 w-4" /> Time Zone Match
+          </Badge>
+          <Badge className="bg-muted hover:bg-muted/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-foreground dark:text-slate-200 cursor-pointer py-2 px-3">
+            <Calendar className="mr-1 h-4 w-4" /> Deadline
+          </Badge>
         </div>
       </div>
     </div>

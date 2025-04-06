@@ -1,5 +1,3 @@
-import { commitmentFilterItems } from "@/app/_components/JobFilter";
-import { currentUser } from "@/lib/auth";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { NextRequest, NextResponse } from "next/server";
@@ -29,8 +27,7 @@ Return a JSON object in the following **exact structure**:
   "rating": {{ "min": <floating number>, "max": <number> }},
   "experience": {{ "min": <number>, "max": <number> }},
   "languages_known": [<string>, ...] or null,
-  "skills": [<string>, ...] or null,
-  "commitment":   "PART_TIME" | "FULL_TIME" | "FREELANCE" | "INTERNSHIP"
+  "skills": [<string>, ...] or null
 }}
 
 ### Rules:
@@ -50,8 +47,7 @@ Return a JSON object in the following **exact structure**:
   "rating": null,
   "experience": null,
   "languages_known": null,
-  "skills": null,
-  "commitment": null
+  "skills": null
 }}
 
 ## IMPORTANT: Output must be valid JSON and contain nothing else.
@@ -65,6 +61,8 @@ export async function POST(req: NextRequest) {
     // }
 
     const { searchPrompt } = await req.json();
+
+    console.log(searchPrompt)
 
     if (!searchPrompt) {
       return NextResponse.json(
@@ -110,7 +108,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check for commitment keywords in the client input
-    if (parsedData.commitment) {
+    if(parsedData.commitment){
       params.append("commitment", parsedData.commitment);
     }
 
