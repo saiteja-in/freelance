@@ -6,6 +6,7 @@ import {
   Clock,
   DollarSign,
   Filter,
+  Router,
   Search,
   Star,
 } from "lucide-react";
@@ -13,6 +14,7 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 export default function AISearch() {
   const [activeTab, setActiveTab] = useState<"find" | "browse">("find");
@@ -20,6 +22,7 @@ export default function AISearch() {
   const [prompt, setPrompt] = useState<string>("");
   const findRef = useRef<HTMLButtonElement>(null);
   const browseRef = useRef<HTMLButtonElement>(null);
+  const router = useRouter();
 
   // Map activeTab to role for API calls
   const role = activeTab === "find" ? "client" : "freelancer";
@@ -52,8 +55,12 @@ export default function AISearch() {
         const response = await axios.post("/api/personalized/freelancers", {
           searchPrompt: prompt,
         });
-        console.log(response.data.filters);
+        console.log(response.data.url);
         toast.success("Found matching freelancers");
+        router.push(response.data.url);
+        // router.push(
+        //   "/find-jobs?exp=0-1+YOE&exp=3-6+YOE&pay=0-10&pay=100%2B&commitment=INTERNSHIP"
+        // );
       } else {
         const response = await axios.post("/api/personalized/jobs", {
           searchPrompt: prompt,

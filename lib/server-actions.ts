@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { db } from "./db";
 import { JobType } from '@prisma/client';
 import { CreateJobSchema, CreateJobSchemaType } from "@/app/_components/jobs.validator";
-
+import { revalidatePath } from 'next/cache'; 
 interface ProductData {
     name: string;
     slug: string;
@@ -245,6 +245,8 @@ interface ProductData {
   };
 
 
+// Import revalidatePath from Next.js
+
   export const upvoteProduct = async (productId: string) => {
     try {
       const authenticatedUser = await auth();
@@ -291,8 +293,7 @@ interface ProductData {
           },
         });
   
-        // notify the product owner about the upvote
-  
+        // Uncomment and implement the notification logic if necessary
         // if (productOwner && productOwner.userId !== userId) {
         //   await db.notification.create({
         //     data: {
@@ -306,12 +307,17 @@ interface ProductData {
         //   });
         // }
       }
+  
+      // Revalidate the path "/hire-talent" to ensure content is up to date
+      revalidatePath("/hire-talent");
+  
       return true;
     } catch (error) {
       console.error("Error upvoting product:", error);
       throw error;
     }
   };
+  
 
 
   export const createJob = async (data: CreateJobSchemaType) => {
@@ -406,15 +412,39 @@ interface ProductData {
   export const getJobs = async (
     page: number,
     limit: number,
-    searchQuery?: string,
-    commitmentTypes?: string[],
-    experienceTypes?: string[],
-    payTypes?: string[],
+    searchQuery: string="",
+    commitmentTypes: string[]=[],
+    experienceTypes: string[]=[],
+    payTypes: string[]=[],
+    skills: string=""
   ) => {
+    console.log({
+      page,
+      limit,
+      searchQuery,
+      commitmentTypes,
+      experienceTypes,
+      payTypes,
+      skills
+    })
     try {
       const skipRecords = (page - 1) * limit;
+
+      if(skills==="" && commitmentTypes.length === 0 && experienceTypes.length === 0 && payTypes.length === 0 && searchQuery==="") {
+        const jobs = await db.job.findMany({
+          take: limit,
+        })
+
+        const cnt = await db.job.count();
+
+        return {
+          success: true,
+          jobs,
+          hasMore: limit < cnt,
+        }
+      }
   
-      const expRanges = experienceTypes?.map((exp) => {
+      const expRanges = experienceTypes.map((exp) => {
         if (exp.includes('+')) {
           const minExp = parseInt(exp.replace('+', '').trim());
           return { min: minExp, max: 100 };
@@ -437,6 +467,8 @@ interface ProductData {
   
         return { min, max };
       });
+
+      const skillsArray = skills?.split(',').map((skill) => skill.trim().toLowerCase()) ?? [];
   
       const [jobs, totalCount] = await Promise.all([
         db.job.findMany({
@@ -446,6 +478,13 @@ interface ProductData {
               {
                 ...(searchQuery
                   ? { title: { contains: searchQuery, mode: 'insensitive' } }
+                  : {}),
+              },
+              {
+                ...(skillsArray.length > 0
+                  ? {
+                      skillsRequired: { hasSome: skillsArray },
+                    }
                   : {}),
               },
               {
@@ -478,7 +517,7 @@ interface ProductData {
                       })),
                     }
                   : {}),
-              },
+              }
             ],
           },
           skip: skipRecords,
@@ -662,56 +701,175 @@ interface ProductData {
   
   
 
-  export const getJobSeekerCards = async () => {
-    try {
-      const authenticatedUser = await auth();
-      if (!authenticatedUser || !authenticatedUser.user?.id) {
-        throw new Error("Unauthorized");
-      }
-  
-      const jobSeekerId = authenticatedUser.user.id;
-  
-      // Fetch applied jobs with only the necessary fields
-      const appliedJobs = await db.applied.findMany({
-        where: {
-          jobSeekerId,
+// server-actions.ts
+// server-actions.ts
+// server-actions.ts
+export const getJobSeekerCards = async () => {
+  try {
+    const authenticatedUser = await auth();
+    if (!authenticatedUser || !authenticatedUser.user?.id) {
+      throw new Error("Unauthorized");
+    }
+
+    const jobSeekerId = authenticatedUser.user.id;
+
+    // Fetch applied jobs with only the necessary fields
+    const appliedJobs = await db.applied.findMany({
+      where: {
+        jobSeekerId,
+      },
+      include: {
+        job: {
+          select: {
+            id: true,
+            title: true,
+            companyName: true,
+            location: true,
+            minExperience: true,
+            maxExperience: true,
+            description: true,
+            skillsRequired: true,
+            minSalary: true,
+            maxSalary: true,
+            currency: true,
+            ExpectedTime: true,
+          },
         },
-        include: {
-          job: {
-            select: {
-              id: true,
-              title: true,
-              companyName: true,
-              location: true,
-              minExperience: true,
-              maxExperience: true,
-              description: true,
-              skillsRequired: true,
-              minSalary: true,
-              maxSalary: true,
-              currency: true,
-              ExpectedTime: true,
+      },
+    });
+
+    return appliedJobs.map((appliedJob) => ({
+      jobId: appliedJob.job.id,
+      title: appliedJob.job.title,
+      companyName: appliedJob.job.companyName,
+      location: appliedJob.job.location,
+      minExperience: appliedJob.job.minExperience,
+      maxExperience: appliedJob.job.maxExperience,
+      description: appliedJob.job.description,
+      skillsRequired: appliedJob.job.skillsRequired,
+      minSalary: appliedJob.job.minSalary,
+      maxSalary: appliedJob.job.maxSalary,
+      currency: appliedJob.job.currency,
+      ExpectedTime: appliedJob.job.ExpectedTime,
+      status:appliedJob.status
+    }));
+  } catch (error) {
+    console.error("Error fetching applied jobs:", error);
+    throw new Error("Failed to fetch applied jobs");
+  }
+};
+
+
+  
+  
+  
+  
+  
+  
+
+
+  export const getEmployerJobApplications = async () => {
+    const session = await auth();
+  
+    if (!session || !session.user.id) {
+      throw new Error("Unauthorized");
+    }
+  
+    const employerId = session.user.id;
+  
+    // Fetch all jobs posted by the employer along with the job seekers who applied
+    const jobs = await db.job.findMany({
+      where: {
+        posterId: employerId,
+      },
+      include: {
+        Applied: {
+          include: {
+            jobSeeker: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+                location: true,
+                experienceRange: true,
+                skills: true,
+                bio: true,
+                portfolioLink: true,
+                githubLink: true,
+                linkedinLink: true,
+                resume: true,
+              },
             },
           },
         },
+      },
+      orderBy: {
+        postedAt: 'desc',
+      },
+    });
+  
+    // Map over the jobs to include jobId in the return object for each job
+    return jobs.map(job => ({
+      jobId: job.id,  // Include jobId for correct typing
+      title: job.title,
+      companyName: job.companyName,
+      location: job.location,
+      minExperience: job.minExperience,
+      maxExperience: job.maxExperience,
+      description: job.description,
+      skillsRequired: job.skillsRequired,
+      minSalary: job.minSalary,
+      maxSalary: job.maxSalary,
+      currency: job.currency,
+      ExpectedTime: job.ExpectedTime,
+      Applied: job.Applied.map(application => ({
+        id: application.id,
+        status: application.status,
+        jobSeeker: application.jobSeeker,
+      })),
+    }));
+  };
+  
+  
+  
+  
+  // Update the application status from PENDING to ACCEPTED
+  export const assignApplicantToJob = async (appliedId: string) => {
+    try {
+      // Step 1: Update the application status to "ACCEPTED"
+      const updatedApplication = await db.applied.update({
+        where: {
+          id: appliedId,
+        },
+        data: {
+          status: "ACCEPTED", // Update status to accepted
+        },
+        include: {
+          jobSeeker: true, // Include jobSeeker to get freelancerId
+          employer: true, // Include employer to get clientId
+          job: true, // Include job to get jobId
+        },
       });
   
-      return appliedJobs.map((appliedJob) => ({
-        jobId: appliedJob.job.id,
-        title: appliedJob.job.title,
-        companyName: appliedJob.job.companyName,
-        location: appliedJob.job.location,
-        minExperience: appliedJob.job.minExperience,
-        maxExperience: appliedJob.job.maxExperience,
-        description: appliedJob.job.description,
-        skillsRequired: appliedJob.job.skillsRequired,
-        minSalary: appliedJob.job.minSalary,
-        maxSalary: appliedJob.job.maxSalary,
-        currency: appliedJob.job.currency,
-        ExpectedTime: appliedJob.job.ExpectedTime,
-      }));
+      // Step 2: Create a contract using the updated application details
+      const contract = await db.contract.create({
+        data: {
+          freelancerId: updatedApplication.jobSeeker.id, // Job Seeker (Freelancer) ID
+          clientId: updatedApplication.employer.id, // Employer (Client) ID
+          bidId: updatedApplication.id, // Reference to the Applied model ID (bidId)
+          jobId: updatedApplication.job.id, // Job ID
+        },
+      });
+  
+      return {
+        success: true,
+        message: "Application status updated and contract created successfully.",
+        contract,
+      };
     } catch (error) {
-      console.error("Error fetching applied jobs:", error);
-      throw new Error("Failed to fetch applied jobs");
+      console.error("Error updating application status and creating contract:", error);
+      throw new Error("Failed to update application status and create contract.");
     }
   };
+  

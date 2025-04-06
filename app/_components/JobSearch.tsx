@@ -44,6 +44,7 @@ function JobSearchContent() {
 
   const commitmentTypes = searchParams.getAll('commitment');
   const experienceTypes = searchParams.getAll('exp');
+  const skillTypes = searchParams.getAll('skills');
   const payTypes = searchParams.getAll('pay');
 
   const fetchJobs = useCallback(
@@ -67,6 +68,7 @@ function JobSearchContent() {
           currentCommitments,
           currentExps,
           currentPays,
+          skillTypes.join(','),
         );
 
         if (query || resetJobs) {
@@ -138,6 +140,22 @@ function JobSearchContent() {
     router.replace(`?${params.toString()}`);
   };
 
+  // handling changes in skills
+  const handleSkills = (skills: string) => {
+    const params = new URLSearchParams(searchParams);
+
+    if (skillTypes.includes(skills)) {
+      const updatedSkills = skillTypes.filter((t) => t !== skills);
+
+      params.delete('skills');
+      updatedSkills.forEach((t) => params.append('skills', t));
+    } else {
+      params.append('skills', skills);
+    }
+
+    router.replace(`?${params.toString()}`);
+  };
+
   // handling changes in pay
   const handlePayChange = (pay: string) => {
     const params = new URLSearchParams(searchParams);
@@ -198,6 +216,7 @@ function JobSearchContent() {
         handleExp={handleExperienceChange}
         handlePay={handlePayChange}
         handleSearch={handleSearchChange}
+        handleSkills={handleSkills}
         searchQuery={searchQuery}
       />
 
